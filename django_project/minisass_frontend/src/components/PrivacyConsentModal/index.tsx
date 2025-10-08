@@ -28,6 +28,9 @@ export default function PrivacyConsentModal({
   const { dispatch } = usePrivacyConsent();
   const { state } = useAuth();
 
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
    // Track ongoing request instead of completed requests
   const isRequestInProgress = useRef(false);
 

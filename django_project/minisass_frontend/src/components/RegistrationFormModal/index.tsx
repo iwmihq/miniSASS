@@ -291,8 +291,8 @@ const RegistrationFormModal: React.FC<RegistrationFormModalProps> = ({
 
 
 
-  return (
-    <>
+return (
+  <>
     <Modal
       isOpen={isOpen}
       onRequestClose={onClose}
@@ -302,11 +302,21 @@ const RegistrationFormModal: React.FC<RegistrationFormModalProps> = ({
           left: '50%',
           right: 'auto',
           bottom: 'auto',
-          transform: 'translate(-50%, -50%)',
+          /* On mobile we slightly reduce the left translation so the modal
+             appears a bit shifted-right, and we make width fit the screen */
+          transform: applyDeviceStyles ? 'translate(-45%, -50%)' : 'translate(-50%, -50%)',
           background: 'white',
           border: 'none',
           borderRadius: '0px 25px 25px 25px',
-          overflowY: 'auto'
+          overflowY: 'auto',
+          /* mobile: almost full width with small gutters; desktop: keep original behavior */
+          width: applyDeviceStyles ? 'calc(100% - 32px)' : undefined,
+          maxWidth: applyDeviceStyles ? 'none' : undefined,
+          /* always limit height so it doesn't overflow the viewport */
+          maxHeight: '90vh',
+          boxSizing: 'border-box',
+          /* smaller padding on mobile */
+          padding: applyDeviceStyles ? '20px' : '32px',
         },
       }}
     >
@@ -377,7 +387,7 @@ const RegistrationFormModal: React.FC<RegistrationFormModalProps> = ({
                 fontFamily: 'Raleway',
                 fontStyle: 'normal',
                 fontWeight: 700,
-                
+
                 fontSize: '24px',
                 lineHeight: '136.4%',
                 color: '#539987',
@@ -518,15 +528,15 @@ const RegistrationFormModal: React.FC<RegistrationFormModalProps> = ({
                 {formData.password && (
                   <div style={{}}>
                     {remainingRequirements.uppercase &&
-											<span style={{color: 'red'}}>At least one uppercase letter is required.<br/></span>}
+                      <span style={{color: 'red'}}>At least one uppercase letter is required.<br/></span>}
                     {remainingRequirements.lowercase &&
-											<span style={{color: 'red'}}>At least one lowercase letter is required.<br/></span>}
+                      <span style={{color: 'red'}}>At least one lowercase letter is required.<br/></span>}
                     {remainingRequirements.digit &&
-											<span style={{color: 'red'}}>At least one digit is required.<br/></span>}
+                      <span style={{color: 'red'}}>At least one digit is required.<br/></span>}
                     {remainingRequirements.specialCharacter &&
-											<span style={{color: 'red'}}>At least one special character is required.<br/></span>}
+                      <span style={{color: 'red'}}>At least one special character is required.<br/></span>}
                     {remainingRequirements.length &&
-											<span style={{color: 'red'}}>Password must be at least 6 characters long.<br/></span>}
+                      <span style={{color: 'red'}}>Password must be at least 6 characters long.<br/></span>}
                   </div>
                 )}
               </div>
@@ -602,8 +612,10 @@ const RegistrationFormModal: React.FC<RegistrationFormModalProps> = ({
       )
       )}
     </Modal>
-    </>
-  );
+  </>
+);
+
+
 };
 
 export default RegistrationFormModal;
