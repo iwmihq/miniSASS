@@ -1,12 +1,12 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import {
-  Button,
   Dialog,
-  DialogActions,
-  DialogContent,
   DialogTitle,
-  Typography,
+  DialogContent,
+  DialogActions,
+  Button,
   Link,
+  Typography,
 } from "@mui/material";
 import axios from "axios";
 import { globalVariables } from "../../utils";
@@ -27,9 +27,6 @@ export default function PrivacyConsentModal({
 }: PrivacyConsentModalProps) {
   const { dispatch } = usePrivacyConsent();
   const { state } = useAuth();
-
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
    // Track ongoing request instead of completed requests
   const isRequestInProgress = useRef(false);
