@@ -158,9 +158,9 @@ const MapPage: React.FC = () => {
 
                   {/* navigation bar */}
                   <div className="flex md:flex-1 flex-col gap-2 items-center justify-start mb-1.5 w-[100%] md:w-full">
-                    
+
                         <NavigationBar activePage="map" isDisableNavigations={isDisableNavigations} />
-                     
+
                   </div>
                 </div>
               </div>
@@ -182,7 +182,7 @@ const MapPage: React.FC = () => {
               </Button>
               <Search searchEntityChanged={geojson => mapRef?.current?.updateHighlighGeojson(geojson)}/>
             </div>
-            <div className="grow relative w-full">
+            <div className="grow relative w-full h-full syalala sm:mt-[-50px]">
               <Map
                 basemaps={
                   basemapsData.map(data => {
@@ -202,7 +202,7 @@ const MapPage: React.FC = () => {
                   })
                 }
                 ref={mapRef}
-                handleSelect={handleMapClick} 
+                handleSelect={handleMapClick}
                 selectingOnMap={selectingOnMap}
                 selectedCoordinates={selectedCoordinates}
                 resetMap={resetMapToDefault}
@@ -237,25 +237,27 @@ const MapPage: React.FC = () => {
 
           {/* Toggle button to reset map */}
           <div
-            className="absolute top-0 left-0 m-4 p-2 bg-white top-[19.5%] rounded-md cursor-pointer"
+            // className="absolute top-0 left-0 m-4 p-2 bg-white top-[19.5%] rounded-md cursor-pointer"
+            className="absolute top-0 left-0 m-4 p-2 bg-white sm:mt-[50px] md:mt-[0px] lg:mt-[0px]
+            sm:ml-[30px] md:mr-[20px] lg:ml-[10px] top-[19.5%] rounded-md cursor-pointer"
             onClick={() => resetMap(-28.671882886975247, 24.679864950000024)}
             style={{
               transition: 'transform 0.6s ease-in-out', // Adding smooth rotation transition
               backgroundColor: 'white',
-              marginLeft: '10px'
             }}
           >
             <HomeIcon className="w-35" />
           </div>
-          
+
           {/* Toggle button to show legend */}
           <div
-            className="absolute top-0 left-0 m-4 p-2 bg-white top-[26%] rounded-md cursor-pointer"
+            className="show-hide-legend absolute top-0 left-0 m-4 p-2 bg-white top-[26%] sm:ml-[30px]
+            md:ml-[10px] lg:ml-[10px] sm:mt-[50px] md:mt-[0px] lg:mt-[0px] rounded-md cursor-pointer"
             onClick={toggleLegend}
             style={{
               transition: 'transform 0.6s ease-in-out', // Adding smooth rotation transition
               backgroundColor: 'white',
-              marginLeft: '10px'
+              zIndex: 100
             }}
           >
             <svg
@@ -280,12 +282,13 @@ const MapPage: React.FC = () => {
           </div>
 
         <div
-          className={`absolute bg-white-A700 flex flex-col gap-2 items-start justify-center left-[1%] px-[18px] py-5 rounded-bl-[10px] rounded-br-[10px] rounded-tr-[10px] top-[50%] sm:top-[25px] w-auto transition-opacity duration-300 ${
+          className={`legend-placeholder absolute bg-white-A700 flex flex-col gap-2 items-start justify-center 
+          left-[1%] px-[18px] py-5 rounded-bl-[10px] rounded-br-[10px] rounded-tr-[10px] top-[50%] 
+          sm:top-[25px] w-auto transition-opacity duration-300 sm:ml-[20%] sm:w-[80%] ${
             showLegend ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
-          style={{ marginLeft: '-4.0px' }}
         >
-        
+
           <Text className="text-base text-black-900" size="txtRalewayRomanBold16">
             Legend
           </Text>

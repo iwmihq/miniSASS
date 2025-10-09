@@ -11,3 +11,8 @@
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
+
+
+.maplibregl-ctrl {
+    margin-left: 15px!important;
+}
