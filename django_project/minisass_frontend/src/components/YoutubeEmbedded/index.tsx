@@ -7,25 +7,22 @@ interface YouTubeVideoProps {
   playButtonColor?: 'red' | 'green' | 'transparent'; // Custom play button color
 }
 
-const YouTubeVideo: React.FC<YouTubeVideoProps> = ({ videoId, height, width, playButtonColor }) => {
-  const colorParam = playButtonColor ? `&color=${playButtonColor}` : '';
-  const embedUrl = `https://www.youtube.com/embed/${videoId}?rel=0${colorParam}`;
+const YouTubeVideo: React.FC<YouTubeVideoProps> = ({ videoId, height, width }) => {
+  const embedUrl = `https://www.youtube.com/embed/${videoId}?rel=0`;
+  console.log(embedUrl);
 
   return (
-    <div className='video-responsive'>
-      <iframe
-        src={embedUrl}
-        title="miniSASS"
-        frameBorder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-        style={{
-          borderRadius: '25px 0px 25px 25px'
-        }}
-        height={height}
-        width={width}
-      ></iframe>
-    </div>
+      <div className='video-responsive'>
+          <iframe
+              width={width}
+              height={height}
+              src={embedUrl}
+              title="miniSASS"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              referrerPolicy="strict-origin-when-cross-origin"
+              style={{borderRadius: '25px 0px 25px 25px'}}
+              allowFullScreen></iframe>
+      </div>
   );
 };
 
