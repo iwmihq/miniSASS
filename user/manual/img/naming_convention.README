@@ -1,0 +1,7 @@
+# Image naming convention
+
+Images should be named according to reference doc, sub-section and order in the document.
+e.g.
+
+- The 1st image in instructions regarding landing-page will be something like landing-page-1, the 2nd image will be landing-page-2, etc.
+- The 1st image in contact-us page regarding contact will be contact-us-1, etc
