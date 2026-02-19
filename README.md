@@ -1,5 +1,5 @@
-![Staging Tag](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/lgkgh/889dd6c34a68d9461b1fd8cdb56b8a21/raw/minisass_build-tag.json)
-![Staging Status](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/lgkgh/889dd6c34a68d9461b1fd8cdb56b8a21/raw/minisass_build-status.json)
+![Staging Tag](https://img.shields.io/endpoint?url=https://kartoza.github.io/kartoza-badges/data/minisass_build/tag.json)
+![Staging Status](https://img.shields.io/endpoint?url=https://kartoza.github.io/kartoza-badges/data/minisass_build/status.json)
 
 miniSASS
 ========
