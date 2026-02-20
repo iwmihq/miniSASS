@@ -1,72 +1,72 @@
-# name: Docker Image CI
+name: Docker Image CI
 
-# on:
-#   push:
-#     branches: [ "main" ]
-#   pull_request:
-#     branches: [ "main" ]
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
 
-# jobs:
+jobs:
 
-#   build:
+  build:
 
-#     runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-#     services:
-#       db:
-#         image: kartoza/postgis:16-3.4
-#         ports:
-#           - 5432:5432
-#         options: >-
-#           --health-cmd="pg_isready -h localhost -p 5432 -U docker"
-#           --health-interval=10s
-#           --health-timeout=5s
-#           --health-retries=5
-#         env:
-#           POSTGRES_DB: minisass_data
-#           POSTGRES_USER: docker
-#           POSTGRES_PASSWORD: docker
-#           ALLOW_IP_RANGE: 0.0.0.0/0
+    services:
+      db:
+        image: kartoza/postgis:16-3.4
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -h localhost -p 5432 -U docker"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+        env:
+          POSTGRES_DB: minisass_data
+          POSTGRES_USER: docker
+          POSTGRES_PASSWORD: docker
+          ALLOW_IP_RANGE: 0.0.0.0/0
 
-#     steps:
-#     - uses: actions/checkout@v4
+    steps:
+    - uses: actions/checkout@v4
 
-#     - name: Set up Docker Buildx
-#       uses: docker/setup-buildx-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
-#     - name: Copy docker-compose.override.template.yml to docker-compose.override.yml
-#       run: cp docker-compose.override.template.yml docker-compose.override.yml
+    - name: Copy docker-compose.override.template.yml to docker-compose.override.yml
+      run: cp docker-compose.override.template.yml docker-compose.override.yml
 
-#     - name: Copy .example.env to .env
-#       run: cp .example.env .env
+    - name: Copy .example.env to .env
+      run: cp .example.env .env
       
-#     - name: Cache Docker layers
-#       uses: actions/cache@v3
-#       with:
-#         path: /tmp/.buildx-cache
-#         key: ${{ runner.os }}-buildx-${{ github.event.pull_request.number }}
-#         restore-keys: |
-#           ${{ runner.os }}-buildx-${{ github.event.pull_request.number }}
-#           ${{ runner.os }}-buildx-
-#     - name: Start Docker Compose services
-#       run: make main
-#       env:
-#         BUILDKIT_PROGRESS: plain
-#         DOCKER_BUILDKIT: 1
-#         BUILDX_CACHE_PATH: /tmp/.buildx-cache
-#       # Wait for PostGIS container to be healthy before running tests
-#     - name: Wait for PostGIS to be ready
-#       run: |
-#         until [ "$(docker inspect --format='{{json .State.Health.Status}}' $(docker compose ps -q db))" == "\"healthy\"" ]; do
-#           echo "Waiting for PostGIS to be healthy..."
-#           sleep 5
-#         done
+    - name: Cache Docker layers
+      uses: actions/cache@v3
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.event.pull_request.number }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-${{ github.event.pull_request.number }}
+          ${{ runner.os }}-buildx-
+    - name: Start Docker Compose services
+      run: make main
+      env:
+        BUILDKIT_PROGRESS: plain
+        DOCKER_BUILDKIT: 1
+        BUILDX_CACHE_PATH: /tmp/.buildx-cache
+      # Wait for PostGIS container to be healthy before running tests
+    - name: Wait for PostGIS to be ready
+      run: |
+        until [ "$(docker inspect --format='{{json .State.Health.Status}}' $(docker compose ps -q db))" == "\"healthy\"" ]; do
+          echo "Waiting for PostGIS to be healthy..."
+          sleep 5
+        done
         
-#     - name: Wait for PostGIS
-#       run: sleep 30
+    - name: Wait for PostGIS
+      run: sleep 30
 
-#     - name: Run Django tests
-#       run: make test
+    - name: Run Django tests
+      run: make test
           
-#     - name: Stop and remove services
-#       run: docker compose -p minisass -f docker-compose.yml -f docker-compose.override.yml down
+    - name: Stop and remove services
+      run: docker compose -p minisass -f docker-compose.yml -f docker-compose.override.yml down

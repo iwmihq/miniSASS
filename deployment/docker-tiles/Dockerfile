@@ -5,7 +5,7 @@ RUN apk add --no-cache curl || true
 
 # Copy your config into the image
 
-COPY ./deployment/config/pg_tileserv.toml /etc/pg_tileserv.toml
+COPY deployment/config/pg_tileserv.toml /etc/pg_tileserv.toml
 
 EXPOSE 7800
 
