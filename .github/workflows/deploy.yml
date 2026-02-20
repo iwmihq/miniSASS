@@ -44,7 +44,7 @@ jobs:
           FULL_IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           # to make it available in ECS step
           echo "FULL_IMAGE_URI=$FULL_IMAGE_URI" >> $GITHUB_ENV
-          docker build -t "$FULL_IMAGE_URI" -f deployment/docker/Dockerfile .
+          docker build -t "$FULL_IMAGE_URI" -f ./deployment/docker/Dockerfile .
           docker push "$FULL_IMAGE_URI"
         working-directory: deployment/docker 
       
@@ -58,7 +58,7 @@ jobs:
           FULL_TILES_IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           # to make it available in ECS step
           echo "FULL_TILES_IMAGE_URI=$FULL_TILES_IMAGE_URI" >> $GITHUB_ENV
-          docker build -t "$FULL_TILES_IMAGE_URI" -f deployment/docker-tiles/Dockerfile .
+          docker build -t "$FULL_TILES_IMAGE_URI" -f ./deployment/docker-tiles/Dockerfile .
           docker push "$FULL_TILES_IMAGE_URI"
      
       
@@ -72,7 +72,7 @@ jobs:
           FULL_S3MOUNT_IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           # to make it available in ECS step
           echo "FULL_S3MOUNT_IMAGE_URI=$FULL_S3MOUNT_IMAGE_URI" >> $GITHUB_ENV
-          docker build -t "$FULL_S3MOUNT_IMAGE_URI"  -f deployment/docker-s3-bucket/Dockerfile .
+          docker build -t "$FULL_S3MOUNT_IMAGE_URI"  -f ./deployment/docker-s3-bucket/Dockerfile .
           docker push "$FULL_S3MOUNT_IMAGE_URI"
       
 
