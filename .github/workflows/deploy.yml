@@ -1,0 +1,110 @@
+name: Build and push to ECR and deploy to ECS
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get timestamp
+        id: ts
+        run: |
+          # Format: YYYY-MM-DD-HH-MM-SS
+          TIME=$(date +'%Y-%m-%d-%H-%M-%S')
+          echo "time=$TIME" >> $GITHUB_OUTPUT
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # these roles have been created on IAM. This was the first step completed.
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/GitHub-Actions-Production-Deployment-Role 
+          aws-region: ${{secrets.AWS_DEPLOYMENT_REGION}}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        id: login-ecr
+
+      - name: Build, tag and push Django Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: iwmi-minisass
+          # tagging with the environment 'staging-datetime ''
+          IMAGE_TAG: 'staging-django-${{ steps.ts.outputs.time  }}'
+        run: |
+          FULL_IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          # to make it available in ECS step
+          echo "FULL_IMAGE_URI=$FULL_IMAGE_URI" >> $GITHUB_ENV
+          docker build -t "$FULL_IMAGE_URI" .
+          docker push "$FULL_IMAGE_URI"
+        working-directory: deployment/docker 
+      
+      - name: Build, tag and push Tiles Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: iwmi-minisass
+          # tagging with the environment 'staging-datetime ''
+          IMAGE_TAG: 'staging-pg_tileserv-${{ steps.ts.outputs.time  }}'
+        run: |
+          FULL_TILES_IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          # to make it available in ECS step
+          echo "FULL_TILES_IMAGE_URI=$FULL_TILES_IMAGE_URI" >> $GITHUB_ENV
+          docker build -t "$FULL_TILES_IMAGE_URI" .
+          docker push "$FULL_TILES_IMAGE_URI"
+        working-directory: deployment/docker-tiles 
+      
+      - name: Build, tag and push Mount Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: iwmi-minisass
+          # tagging with the environment 'staging-datetime ''
+          IMAGE_TAG: 'staging-s3mount-${{ steps.ts.outputs.time  }}'
+        run: |
+          FULL_S3MOUNT_IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          # to make it available in ECS step
+          echo "FULL_S3MOUNT_IMAGE_URI=$FULL_S3MOUNT_IMAGE_URI" >> $GITHUB_ENV
+          docker build -t "$FULL_S3MOUNT_IMAGE_URI" .
+          docker push "$FULL_S3MOUNT_IMAGE_URI"
+        working-directory: deployment/docker-s3-bucket
+
+      
+      - name: Determine Configs
+        id: secret
+        run: |
+            echo "SECRET_ARN=arn:aws:secretsmanager:${{ secrets.AWS_DEPLOYMENT_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:secret:staging/minisass-4L3Wd0" >> $GITHUB_ENV
+            echo "CLUSTER_NAME=iwmi-staging-cluster-afsouth1" >> $GITHUB_ENV
+
+          
+      - name: Render task definition
+        working-directory: deployment
+        # replace the placeholder in the task definition with the URL to the new build on ECR
+        run: |
+          # Determine Keycloak hostname based on branch
+          sed -i "s|<ECR_DJANGO_IMAGE_URI>|$FULL_IMAGE_URI|g" taskdef.json
+          sed -i "s|<ECR_TILES_IMAGE_URI>|$FULL_TILES_IMAGE_URI|g" taskdef.json
+          sed -i "s|<ECR_S3MOUNT_IMAGE_URI>|$FULL_S3MOUNT_IMAGE_URI|g" taskdef.json
+          sed -i "s|<AWS_ACCOUNT_ID>|${{ secrets.AWS_ACCOUNT_ID }}|g" taskdef.json
+          sed -i "s|<AWS_REGION>|${{ secrets.AWS_DEPLOYMENT_REGION }}|g" taskdef.json
+          sed -i "s|<RDS_DATABASE_HOST>|${{ secrets.RDS_DATABASE_HOST }}|g" taskdef.json
+          sed -i "s|<S3_BUCKET_URL>|${{ secrets.S3_BUCKET_URL }}|g" taskdef.json
+          sed -i "s|<MINISASS_EFS_FILE_SYSTEM_ID>|${{ secrets.MINISASS_EFS_FILE_SYSTEM_ID }}|g" taskdef.json
+          sed -i "s|<SECRET_ARN>|$SECRET_ARN|g" taskdef.json
+          
+      
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: auth/taskdef.json
+          service: keycloak-auth-service
+          cluster:  ${{ env.CLUSTER_NAME }}
+          wait-for-service-stability: true
+          

@@ -1,0 +1,213 @@
+{
+  "family": "minisass-fargate-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "django",
+      "image": "<ECR_DJANGO_IMAGE_URI>",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "DATABASE_HOST",
+          "value": "<RDS_DATABASE_HOST>"
+        },
+        {
+          "name": "DATABASE_PORT",
+          "value": "5432"
+        },
+        {
+          "name": "DJANGO_DB",
+          "value": "minisass"
+        },
+        {
+          "name": "ALLOWED_HOSTS",
+          "value": "*"
+        },
+        {
+          "name": "TS_BASEPATH",
+          "value": "/tiles"
+        },
+        {
+          "name": "DEV_SETUP",
+          "value": "FALSE"
+        },
+        {
+          "name": "GOOGLE_ANALYTICS_TRACKING_CODE",
+          "value": "12345"
+        },
+        {
+          "name": "MINIO_BUCKET",
+          "value": "minisass-staging"
+        },
+        {
+          "name": "MINIO_AI_BUCKET",
+          "value": "minisass-staging"
+        },
+        {
+          "name": "MINIO_URL",
+          "value": "<S3_BUCKET_URL>"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "POSTGRES_USER",
+          "valueFrom": "<SECRET_ARN>:POSTGRES_USER::"
+        },
+        {
+          "name": "DJANGO_SUPERUSER_USERNAME",
+          "valueFrom": "<SECRET_ARN>:DJANGO_SUPERUSER_USERNAME::"
+        },
+        {
+          "name": "DJANGO_SUPERUSER_EMAIL",
+          "valueFrom": "<SECRET_ARN>:DJANGO_SUPERUSER_EMAIL::"
+        },
+        {
+          "name": "DJANGO_SUPERUSER_PASSWORD",
+          "valueFrom": "<SECRET_ARN>:DJANGO_SUPERUSER_PASSWORD::"
+        },
+        {
+          "name": "POSTGRES_PASS",
+          "valueFrom": "<SECRET_ARN>:POSTGRES_PASS::"
+        },
+        {
+          "name": "SECRET_KEY",
+          "valueFrom": "<SECRET_ARN>:SECRET_KEY::"
+        },
+        {
+          "name": "AWS_ACCESS_KEY",
+          "valueFrom": "<SECRET_ARN>:AWS_ACCESS_KEY::"
+        },
+        {
+          "name": "AWS_SECRET_ACCESS_KEY",
+          "valueFrom": "<SECRET_ARN>:AWS_SECRET_ACCESS_KEY::"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/minisass",
+          "awslogs-region": "<AWS_REGION>",
+          "awslogs-stream-prefix": "django"
+        }
+      },
+      "mountPoints": [
+        {
+          "sourceVolume": "efs-media",
+          "containerPath": "/home/web/media",
+          "readOnly": false
+        },
+        {
+          "sourceVolume": "efs-s3",
+          "containerPath": "/home/web/minio",
+          "readOnly": false
+        }
+      ]
+    },
+    {
+      "name": "tiles",
+      "image": "<ECR_TILES_IMAGE_URI>",
+      "essential": false,
+      "portMappings": [
+        {
+          "containerPort": 7800,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "TS_BASEPATH",
+          "value": "/tiles"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/minisass",
+          "awslogs-region": "<AWS_REGION>",
+          "awslogs-stream-prefix": "tiles"
+        }
+      },
+      "secrets": [
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "<SECRET_ARN>:TILES_DATABASE_URL::"
+        }
+      ]
+    },
+    {
+      "name": "s3mount",
+      "image": "<ECR_S3MOUNT_IMAGE_URI>",
+      "essential": true,
+      "mountPoints": [
+        {
+          "sourceVolume": "efs-s3",
+          "containerPath": "/var/www/s3",
+          "readOnly": false
+        }
+      ],
+      "environment": [
+        {
+          "name": "S3_MOUNT_DIRECTORY",
+          "value": "/var/www/s3"
+        },
+        {
+          "name": "S3_BUCKET_NAME",
+          "value": "minisass-staging"
+        },
+        {
+          "name": "MINIO_URL",
+          "value": "<S3_BUCKET_URL>"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "AWS_ACCESS_KEY",
+          "valueFrom": "<SECRET_ARN>:AWS_ACCESS_KEY::"
+        },
+        {
+          "name": "AWS_SECRET_ACCESS_KEY",
+          "valueFrom": "<SECRET_ARN>:AWS_SECRET_ACCESS_KEY::"
+        }
+      ],
+      "privileged": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/minisass",
+          "awslogs-region": "<AWS_REGION>",
+          "awslogs-stream-prefix": "s3mount"
+        }
+      }
+    }
+  ],
+  "volumes": [
+    {
+      "name": "efs-media",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "<MINISASS_EFS_FILE_SYSTEM_ID>",
+        "rootDirectory": "/media",
+        "transitEncryption": "ENABLED"
+      }
+    },
+    {
+      "name": "efs-s3",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "<MINISASS_EFS_FILE_SYSTEM_ID>",
+        "rootDirectory": "/s3",
+        "transitEncryption": "ENABLED"
+      }
+    }
+  ]
+}
