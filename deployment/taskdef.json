@@ -59,6 +59,10 @@
         {
           "name": "MINIO_URL",
           "value": "<S3_BUCKET_URL>"
+        },
+        {
+          "name": "DEBUG",
+          "value": "False"
         }
       ],
       "secrets": [
