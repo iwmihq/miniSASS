@@ -35,7 +35,7 @@
         }
       ],
       "mountPoints": [
-         {
+        {
           "sourceVolume": "efs-media",
           "containerPath": "/home/web/media"
         },
@@ -47,7 +47,15 @@
           "sourceVolume": "efs-s3",
           "containerPath": "/home/web/minio"
         }
-      ]
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/minisass",
+          "awslogs-region": "<AWS_REGION>",
+          "awslogs-stream-prefix": "nginx"
+        }
+      }
     },
     {
       "name": "django",
