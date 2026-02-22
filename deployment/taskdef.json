@@ -2,7 +2,7 @@
   "family": "minisass-task",
   "networkMode": "bridge",
   "requiresCompatibilities": [
-    "EC2"
+    "MANAGED_INSTANCES"
   ],
   "cpu": "1024",
   "memory": "2048",
