@@ -165,6 +165,10 @@
           "sourceVolume": "efs-s3",
           "containerPath": "/home/web/minio",
           "readOnly": false
+        },
+        {
+          "sourceVolume": "efs-media",
+          "containerPath": "/home/web/static"
         }
       ]
     },
