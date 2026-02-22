@@ -199,8 +199,8 @@
         "fileSystemId": "<MINISASS_EFS_FILE_SYSTEM_ID>",
         "transitEncryption": "ENABLED",
         "authorizationConfig": {
-          "accessPointId": "<MINISASS_EFS_MEDIA_ACCESS_POINT_ID>",
-          "iam": "ENABLED"
+          "accessPointId": "<MINISASS_EFS_MEDIA_ACCESS_POINT_ID>"
+  
         }
       }
     },
@@ -209,8 +209,8 @@
       "efsVolumeConfiguration": {
         "fileSystemId": "<MINISASS_EFS_FILE_SYSTEM_ID>",
         "authorizationConfig": {
-          "accessPointId": "<MINISASS_EFS_S3_ACCESS_POINT_ID>",
-          "iam": "ENABLED"
+          "accessPointId": "<MINISASS_EFS_S3_ACCESS_POINT_ID>"
+     
         },
         "transitEncryption": "ENABLED"
       }
