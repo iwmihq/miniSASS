@@ -35,16 +35,16 @@
         }
       ],
       "mountPoints": [
-        {
-          "sourceVolume": "static-data",
-          "containerPath": "/home/web/static"
-        },
-        {
-          "sourceVolume": "media-data",
+         {
+          "sourceVolume": "efs-media",
           "containerPath": "/home/web/media"
         },
         {
-          "sourceVolume": "minio-images",
+          "sourceVolume": "efs-media",
+          "containerPath": "/home/web/static"
+        },
+        {
+          "sourceVolume": "efs-s3",
           "containerPath": "/home/web/minio"
         }
       ]
