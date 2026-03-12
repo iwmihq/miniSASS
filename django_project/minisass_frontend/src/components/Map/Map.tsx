@@ -276,8 +276,10 @@ export const Map = forwardRef((props: Interface, ref) => {
           ]
         };
 
-        if (mapInstance.getSource('selected-point')) {
+        if (mapInstance.getLayer('selected-point-layer')) {
           mapInstance.removeLayer('selected-point-layer')
+        }
+        if (mapInstance.getSource('selected-point')) {
           mapInstance.removeSource('selected-point')
         }
         mapInstance.addSource('selected-point', {
@@ -314,10 +316,12 @@ export const Map = forwardRef((props: Interface, ref) => {
         const { longitude, latitude } = props.selectedCoordinates;
         moveMapToCoordinates(longitude, latitude);
       } else {
-        try {
+        if (map.getLayer('selected-point-layer')) {
           map.removeLayer('selected-point-layer')
+        }
+        if (map.getSource('selected-point')) {
           map.removeSource('selected-point')
-        } catch (error) {}
+        }
       }
     
       const handleSelectOnMapClick = (e) => {
