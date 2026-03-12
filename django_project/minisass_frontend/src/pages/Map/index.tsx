@@ -167,12 +167,17 @@ const MapPage: React.FC = () => {
           {/* Logo */}
           <button
             onClick={() => navigate("/")}
-            className="flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            className="flex flex-shrink-0 items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             aria-label="miniSASS Home"
           >
             <Img
               className="h-12 w-auto object-contain sm:h-14"
               src={`${globalVariables.staticPath}img_minisasslogo1.png`}
+              alt="miniSASS"
+            />
+            <Img
+              className="hidden h-5 w-auto object-contain sm:inline sm:h-6 lg:h-7"
+              src={`${globalVariables.staticPath}miniSASS_text.png`}
               alt="miniSASS"
             />
           </button>

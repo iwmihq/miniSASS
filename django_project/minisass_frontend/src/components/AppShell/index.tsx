@@ -95,15 +95,11 @@ export default function AppShell({
               src={`${globalVariables.staticPath}img_minisasslogo1.png`}
               alt="miniSASS"
             />
-            <span className="hidden font-raleway text-[1.4rem] font-extrabold tracking-tight sm:inline sm:text-[1.6rem] lg:text-[1.8rem]" style={{ lineHeight: 1 }}>
-              <span
-                style={{
-                  color: "transparent",
-                  WebkitTextStroke: "2px #2E3F7F",
-                  verticalAlign: "baseline",
-                }}
-              >mini</span><span className="text-[#2E3F7F]" style={{ verticalAlign: "baseline" }}>SASS</span>
-            </span>
+            <Img
+              className="hidden h-6 w-auto object-contain sm:inline sm:h-7 lg:h-8"
+              src={`${globalVariables.staticPath}miniSASS_text.png`}
+              alt="miniSASS"
+            />
           </button>
 
           {/* Desktop nav */}
