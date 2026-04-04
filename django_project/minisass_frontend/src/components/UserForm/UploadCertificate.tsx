@@ -128,7 +128,7 @@ const EditPassword: React.FC<UploadCertiicateInterface> = ({
                   name="certificate"
                   onChange={handleFileChange}
                   placeholder="Certificate"
-                  style={{borderRadius: '4px', width: '16.5vw'}}
+                  style={{borderRadius: '4px', width: '100%'}}
                 />
               </Grid>
             </Grid>

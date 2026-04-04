@@ -19,6 +19,7 @@ const EnforcePasswordChangeModal: React.FC<Props> = ({ isOpen, onClose }) => {
         isOpen={isOpen}
         onRequestClose={onClose}
         style={{
+          overlay: { zIndex: 50, backgroundColor: 'rgba(0, 0, 0, 0.5)' },
           content: {
             top: '50%',
             left: '50%',
@@ -26,8 +27,10 @@ const EnforcePasswordChangeModal: React.FC<Props> = ({ isOpen, onClose }) => {
             bottom: 'auto',
             marginRight: '-50%',
             transform: 'translate(-50%, -50%)',
-            width: '100%',
-            maxWidth: '43vw',
+            width: 'calc(100% - 32px)',
+            maxWidth: '520px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
             background: 'white',
             border: 'none',
             borderRadius: '0px 25px 25px 25px',
@@ -64,7 +67,7 @@ const EnforcePasswordChangeModal: React.FC<Props> = ({ isOpen, onClose }) => {
             color="blue_gray_500"
             size="xs"
             variant="fill"
-            style={{ marginLeft: "70%" }}
+            style={{ marginLeft: "auto", display: 'block' }}
             onClick={onClose}
           >
             Update

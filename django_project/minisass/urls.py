@@ -57,11 +57,19 @@ urlpatterns = [
     # Indlude monitor URLs
     path('monitor/', include('monitor.urls')),
 
-    # map frontend urls to backend
+    # map frontend urls to backend (with and without trailing slash for SPA compatibility)
     path("map/", ReactBaseView.as_view(template_name="react_base.html"), name="map"),
+    path("map", ReactBaseView.as_view(template_name="react_base.html")),
     path("password-reset/", ReactBaseView.as_view(template_name="react_base.html"), name="password_reset"),
+    path("password-reset", ReactBaseView.as_view(template_name="react_base.html")),
     path("howto/", ReactBaseView.as_view(template_name="react_base.html"), name="how_to"),
+    path("howto", ReactBaseView.as_view(template_name="react_base.html")),
     path("recent-activity/", ReactBaseView.as_view(template_name="react_base.html"), name="recent_activity"),
+    path("recent-activity", ReactBaseView.as_view(template_name="react_base.html")),
+    path("mobile-app/", ReactBaseView.as_view(template_name="react_base.html"), name="mobile_app"),
+    path("mobile-app", ReactBaseView.as_view(template_name="react_base.html")),
+    path("privacy-policy/", ReactBaseView.as_view(template_name="react_base.html"), name="privacy_policy_page"),
+    path("privacy-policy", ReactBaseView.as_view(template_name="react_base.html")),
 
     # privacy policy
     path(

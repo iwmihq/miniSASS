@@ -5,6 +5,34 @@ import zipfile
 from django.conf import settings
 
 
+def safe_save_field_file(field_file, out_dir, dst=None) -> str:
+    """Save a Django FieldFile (which may be backed by S3/MinIO) to a local directory.
+
+    Works with any storage backend by reading through the Django storage API
+    instead of relying on a local filesystem path.
+
+    :param field_file: A Django FieldFile instance (e.g. model.image).
+    :param str out_dir: Directory to save the file into.
+    :param str dst: Filename for the saved file. If None, use the original name.
+    :return: Full path of the saved file.
+    """
+    name = dst or os.path.basename(field_file.name)
+    base, extension = os.path.splitext(name)
+    destination = os.path.join(out_dir, name)
+    i = 1
+    while os.path.exists(destination):
+        destination = os.path.join(out_dir, f'{base}_{i}{extension}')
+        i += 1
+    field_file.open('rb')
+    try:
+        with open(destination, 'wb') as f:
+            for chunk in field_file.chunks():
+                f.write(chunk)
+    finally:
+        field_file.close()
+    return destination
+
+
 def safe_copy(file_path, out_dir, dst=None) -> str:
     """Safely copy a file to the specified directory. If a file with the same name already
     exists, the copied file name is altered to preserve both.

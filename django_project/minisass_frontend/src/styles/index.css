@@ -182,3 +182,14 @@ ul li a{
   background: #6b6b6b;
   border-radius: 10px;
 }
+
+/* GTranslate floating widget — scale down globally */
+.gt_float_switcher {
+  transform: scale(0.75);
+  transform-origin: bottom left;
+}
+@media only screen and (max-width: 639px) {
+  .gt_float_switcher {
+    transform: scale(0.6);
+  }
+}

@@ -16,16 +16,16 @@ const slideshowImages = [
 
 const Slideshow: React.FC = () => {
   return (
-    <div className="relative">
+    <div className="relative pb-10 sm:pb-14 bg-gradient-to-b from-transparent to-surface">
       <Banner />
       <div className="slide-container">
         <Fade>
           {slideshowImages.map((fadeImage, index) => (
             <div key={index}>
               <Img
-                className="h-[464px] sm:left-[] mt-auto mx-auto object-cover relative rounded-br-[65px] top-10 sm:top-[-80px] md:top-[-85px] w-full mt-[-25px]"
+                className="h-[200px] sm:h-[320px] md:h-[400px] lg:h-[464px] mx-auto w-full object-cover rounded-br-[65px]"
                 src={fadeImage}
-                alt="intrestedcitize"
+                alt="Slideshow"
               />
             </div>
           ))}
