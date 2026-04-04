@@ -9,6 +9,7 @@ export default defineConfig({
   build: { manifest: true },
   base: isProd ? "/static/" : "/",
   root: "./src",
+  publicDir: "../public",
   plugins: [tsconfigPaths(), react()],
   // server: !isProd
   //   ? {

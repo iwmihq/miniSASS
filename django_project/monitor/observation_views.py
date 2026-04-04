@@ -7,13 +7,13 @@ from datetime import datetime
 from decimal import Decimal
 
 # Third-party dependencies
+import tempfile
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from PIL import Image
+import boto3
 import botocore
-from minio import Minio
-from minio.error import S3Error
 
 # Django imports
 from django.conf import settings
@@ -38,7 +38,6 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 # Project-specific imports (minisass and monitor)
 from minisass.models import GroupScores
-from minisass.utils import get_s3_client
 from minisass_authentication.models import UserProfile
 from minisass_authentication.permissions import IsAuthenticatedOrWhitelisted
 from monitor.models import (
@@ -54,13 +53,6 @@ from monitor.serializers import (
 
 def clear_tensorflow_session():
 	tf.keras.backend.clear_session()
-
-# Use environment variables for Minio configuration
-minio_access_key = settings.MINIO_ACCESS_KEY
-minio_secret_key = settings.MINIO_SECRET_KEY
-minio_endpoint = settings.MINIO_ENDPOINT
-minio_bucket = settings.MINIO_AI_BUCKET
-secure_connection = os.getenv('SECURE_CONNECTION', False)
 
 classes = [
 	'bugs_and_beetles',
@@ -86,43 +78,40 @@ def get_observations_by_site(request, site_id, format=None):
 		serializer = ObservationsAllFieldsSerializer(observations, many=True)
 
 		return JsonResponse({'status': 'success', 'observations': serializer.data})
-	
+
 	except Sites.DoesNotExist as e:
 		return JsonResponse({'status': 'error', 'message': 'Site does not exist'}, status=404)
 
 
-def retrieve_file_from_minio(file_name):
-	try:
-		minio_client = Minio(
-			minio_endpoint,
-			access_key=minio_access_key,
-			secret_key=minio_secret_key,
-			secure=secure_connection
-		)
-		# Download the file from Minio
-		file_path = os.path.join(
-			settings.MINIO_ROOT, settings.MINIO_BUCKET, file_name)
-		minio_client.fget_object(minio_bucket, file_name, file_path)
+def retrieve_file_from_s3(file_name):
+	"""Download a file from S3 using django-storages backend."""
+	storage = settings.MINION_STORAGE
+	s3_key = f'{settings.MINIO_BUCKET}/{file_name}'
 
-		return file_path
-	except (S3Error, TypeError, ValueError):
-		file_path = os.path.join(
-			settings.MINIO_ROOT, settings.MINIO_BUCKET, file_name)
-		if os.path.exists(file_path):
-			return file_path
-		else:
-			s3_client = get_s3_client()
-			try:
-				s3_client.download_file(
-					settings.MINIO_AI_BUCKET, file_name, file_path)
-				return file_path
-			except botocore.exceptions.ClientError as e:
-				print(f"Error retrieving file from Minio: {e}")
-				return None
+	# Check local cache first
+	local_path = os.path.join(settings.MINIO_ROOT, settings.MINIO_BUCKET, file_name)
+	if os.path.exists(local_path):
+		return local_path
+
+	try:
+		os.makedirs(os.path.dirname(local_path), exist_ok=True)
+		# Download via boto3 (more efficient for large files like ML models)
+		s3_client = boto3.client(
+			's3',
+			endpoint_url=settings.MINIO_ENDPOINT if settings.MINIO_ENDPOINT else None,
+			aws_access_key_id=settings.MINIO_ACCESS_KEY,
+			aws_secret_access_key=settings.MINIO_SECRET_KEY,
+			region_name=os.getenv('AWS_S3_REGION_NAME', 'af-south-1'),
+		)
+		s3_client.download_file(settings.MINIO_AI_BUCKET, file_name, local_path)
+		return local_path
+	except Exception as e:
+		print(f"Error retrieving file from S3: {e}")
+		return None
 
 
 file_name = "ai_image_calculation.h5"
-downloaded_file_path = retrieve_file_from_minio(file_name)
+downloaded_file_path = retrieve_file_from_s3(file_name)
 if downloaded_file_path:
 	try:
 		model = keras.models.load_model(downloaded_file_path)

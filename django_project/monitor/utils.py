@@ -3,7 +3,6 @@ import requests
 import os
 import zipfile
 from django.conf import settings
-from minisass.utils import send_to_minio
 
 
 def safe_copy(file_path, out_dir, dst=None) -> str:
@@ -44,13 +43,6 @@ def zip_directory(directory_path, zip_path):
                     )
                 )
 
-
-def send_to_ai_bucket(instance):
-    from monitor.models import ObservationPestImage
-
-    instance: ObservationPestImage = instance
-    destination = instance.get_minio_key()
-    send_to_minio(source=instance.image.path, destination=destination, bucket=settings.MINIO_AI_BUCKET)
 
 
 def get_country_from_coordinates_nominatim(latitude, longitude):

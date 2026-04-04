@@ -28,10 +28,16 @@
         {
           "containerName": "tiles",
           "condition": "START"
+        }
+      ],
+      "environment": [
+        {
+          "name": "S3_MEDIA_BUCKET",
+          "value": "minisass-staging"
         },
         {
-          "containerName": "s3mount",
-          "condition": "START"
+          "name": "S3_MEDIA_REGION",
+          "value": "<AWS_REGION>"
         }
       ],
       "mountPoints": [
@@ -42,10 +48,6 @@
         {
           "sourceVolume": "efs-media",
           "containerPath": "/home/web/static"
-        },
-        {
-          "sourceVolume": "efs-s3",
-          "containerPath": "/home/web/minio"
         }
       ],
       "logConfiguration": {
@@ -98,15 +100,15 @@
         },
         {
           "name": "MINIO_BUCKET",
-          "value": "minisass-staging"
+          "value": "minisass"
         },
         {
           "name": "MINIO_AI_BUCKET",
           "value": "minisass-staging"
         },
         {
-          "name": "MINIO_URL",
-          "value": "<S3_BUCKET_URL>"
+          "name": "AWS_S3_REGION_NAME",
+          "value": "<AWS_REGION>"
         },
         {
           "name": "DEBUG",
@@ -158,11 +160,6 @@
           "readOnly": false
         },
         {
-          "sourceVolume": "efs-s3",
-          "containerPath": "/home/web/minio",
-          "readOnly": false
-        },
-        {
           "sourceVolume": "efs-media",
           "containerPath": "/home/web/static"
         }
@@ -198,74 +195,11 @@
           "valueFrom": "<SECRET_ARN>:TILES_DATABASE_URL::"
         }
       ]
-    },
-    {
-      "name": "s3mount",
-      "image": "<ECR_S3MOUNT_IMAGE_URI>",
-      "essential": true,
-      "linuxParameters": {
-        "capabilities": {
-          "add": [
-            "SYS_ADMIN"
-          ]
-        }
-      },
-      "privileged": true,
-      "mountPoints": [
-        {
-          "sourceVolume": "efs-s3",
-          "containerPath": "/var/www/s3",
-          "readOnly": false
-        }
-      ],
-      "environment": [
-        {
-          "name": "S3_MOUNT_DIRECTORY",
-          "value": "/var/www/s3"
-        },
-        {
-          "name": "S3_BUCKET_NAME",
-          "value": "minisass-staging"
-        },
-        {
-          "name": "AWS_REGION",
-          "value": "<AWS_REGION>"
-        },
-        {
-          "name": "MINIO_URL",
-          "value": "<S3_BUCKET_URL>"
-        }
-      ],
-      "secrets": [
-        {
-          "name": "AWS_ACCESS_KEY",
-          "valueFrom": "<SECRET_ARN>:AWS_ACCESS_KEY::"
-        },
-        {
-          "name": "AWS_SECRET_ACCESS_KEY",
-          "valueFrom": "<SECRET_ARN>:AWS_SECRET_ACCESS_KEY::"
-        }
-      ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/ecs/minisass",
-          "awslogs-region": "<AWS_REGION>",
-          "awslogs-stream-prefix": "s3mount"
-        }
-      }
     }
   ],
   "volumes": [
     {
       "name": "efs-media",
-      "efsVolumeConfiguration": {
-        "fileSystemId": "<MINISASS_EFS_FILE_SYSTEM_ID>",
-        "transitEncryption": "ENABLED"
-      }
-    },
-    {
-      "name": "efs-s3",
       "efsVolumeConfiguration": {
         "fileSystemId": "<MINISASS_EFS_FILE_SYSTEM_ID>",
         "transitEncryption": "ENABLED"
