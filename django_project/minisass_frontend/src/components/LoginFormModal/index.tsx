@@ -23,8 +23,15 @@ const LoginFormModal: React.FC<LoginFormModalProps> = ({ isOpen, onClose, onSubm
     usernameForEmailRetrieval: ''
   });
   const [error, setError] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
   const navigate = useNavigate();
   const isMapPage = window.location.href.includes('/map')
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 600);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (error_response === null) {
@@ -95,19 +102,34 @@ const LoginFormModal: React.FC<LoginFormModalProps> = ({ isOpen, onClose, onSubm
       isOpen={isOpen}
       onRequestClose={onClose}
       style={{
-        content: {
-          top: '50%',
-          left: '50%',
-          right: 'auto',
-          bottom: 'auto',
-          marginRight: '-50%',
-          transform: 'translate(-50%, -50%)',
-          width: '100%',
-          maxWidth: '400px',
-          background: 'white',
-          border: 'none',
-          borderRadius: '0px 25px 25px 25px',
-        },
+        overlay: { zIndex: 50, backgroundColor: 'rgba(0, 0, 0, 0.5)' },
+        content: isMobile
+          ? {
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100%',
+              height: '100%',
+              background: 'white',
+              border: 'none',
+              borderRadius: 0,
+              padding: 0,
+              overflow: 'auto',
+            }
+          : {
+              top: '50%',
+              left: '50%',
+              right: 'auto',
+              bottom: 'auto',
+              marginRight: '-50%',
+              transform: 'translate(-50%, -50%)',
+              width: '100%',
+              maxWidth: '400px',
+              background: 'white',
+              border: 'none',
+              borderRadius: '0px 25px 25px 25px',
+            },
       }}
     >
   {isOpen && (
@@ -116,7 +138,7 @@ const LoginFormModal: React.FC<LoginFormModalProps> = ({ isOpen, onClose, onSubm
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: '32px',
+        padding: isMobile ? '24px 16px' : '32px',
         gap: '18px',
       }}
     >
@@ -130,7 +152,7 @@ const LoginFormModal: React.FC<LoginFormModalProps> = ({ isOpen, onClose, onSubm
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  marginLeft: '80px',
+                  width: '100%',
                 }}
               >
                 <h3
@@ -142,22 +164,17 @@ const LoginFormModal: React.FC<LoginFormModalProps> = ({ isOpen, onClose, onSubm
                     lineHeight: '136.4%',
                     color: '#539987',
                     flex: 1,
+                    textAlign: 'center',
                   }}
                 >
                   Login
                 </h3>
 
-                <div
-                  style={{
-                    marginLeft: '80px',
-                  }}
-                >
-                  <Img
-                    className="h-6 w-6 common-pointer"
-                    src={`${globalVariables.staticPath}img_icbaselineclose.svg`}
-                    alt="close"
-                    onClick={onClose} />
-                </div>
+                <Img
+                  className="h-6 w-6 common-pointer"
+                  src={`${globalVariables.staticPath}img_icbaselineclose.svg`}
+                  alt="close"
+                  onClick={onClose} />
               </div><form
                 onSubmit={handleSubmit}
                 style={{
@@ -165,6 +182,7 @@ const LoginFormModal: React.FC<LoginFormModalProps> = ({ isOpen, onClose, onSubm
                   flexDirection: 'column',
                   alignItems: 'center',
                   gap: '10px',
+                  width: '100%',
                 }}
               >
                   <input
@@ -175,11 +193,12 @@ const LoginFormModal: React.FC<LoginFormModalProps> = ({ isOpen, onClose, onSubm
                     placeholder="Email"
                     style={{
                       width: '100%',
-                      maxWidth: '300px',
-                      height: '40px',
+                      maxWidth: isMobile ? '100%' : '300px',
+                      height: '44px',
                       border: '1px solid rgba(0, 0, 0, 0.23)',
                       borderRadius: '4px',
                       padding: '8px 12px',
+                      fontSize: '16px',
                     }} />
                   <input
                     type="password"
@@ -189,11 +208,12 @@ const LoginFormModal: React.FC<LoginFormModalProps> = ({ isOpen, onClose, onSubm
                     placeholder="Password"
                     style={{
                       width: '100%',
-                      maxWidth: '300px',
-                      height: '40px',
+                      maxWidth: isMobile ? '100%' : '300px',
+                      height: '44px',
                       border: '1px solid rgba(0, 0, 0, 0.23)',
                       borderRadius: '4px',
                       padding: '8px 12px',
+                      fontSize: '16px',
                     }} />
                   {error && (
                     <div style={{ color: 'red' }}>{error}</div>
@@ -202,11 +222,10 @@ const LoginFormModal: React.FC<LoginFormModalProps> = ({ isOpen, onClose, onSubm
                     <div style={{ color: 'red' }}>{error_response}</div>
                   )}
                   <Button
-                    className="cursor-pointer rounded-bl-[10px] rounded-br-[10px] rounded-tr-[10px] text-center text-lg tracking-[0.81px] w-[156px]"
+                    className={`cursor-pointer rounded-bl-[10px] rounded-br-[10px] rounded-tr-[10px] text-center text-lg tracking-[0.81px] ${isMobile ? 'w-full' : 'w-[156px]'}`}
                     color="blue_gray_500"
                     size="xs"
                     variant="fill"
-                    style={{ marginRight: "-40%" }}
                     onClick={handleSubmit}
                   >
                     Login

@@ -10,6 +10,15 @@ import Typography from '@mui/material/Typography';
 import {useAuth} from "../../AuthContext";
 import ConfirmationDialogRaw from "../../components/ConfirmationDialog";
 import CircularProgress from '@mui/material/CircularProgress';
+import FormStepIndicator from "../FormStepIndicator";
+
+const FORM_STEPS = [
+  { label: "Site Details" },
+  { label: "Observations" },
+  { label: "Measurements" },
+  { label: "Assessment" },
+  { label: "Submit" },
+];
 
 
 interface ScoreFormProps {
@@ -468,9 +477,10 @@ const ScoreForm: React.FC<ScoreFormProps> = ({ onCancel, additionalData, setSide
         style={{
           height: '75vh',
           overflowY: 'auto',
-          overflowX: 'auto'
+          overflowX: 'hidden'
         }}
       >
+        <FormStepIndicator steps={FORM_STEPS} currentStep={3} className="mb-2 w-full" />
         {isSavingData ? (
           <div className=" flex flex-col gap-3  items-start justify-start p-3 md:px-5 rounded-bl-[10px] rounded-br-[10px] rounded-tr-[10px] shadow-bs w-[568px] sm:w-full">
             <div className="flex flex-row gap-80 w-auto sm:w-full" style={{marginLeft: '0px'}}>
@@ -484,9 +494,7 @@ const ScoreForm: React.FC<ScoreFormProps> = ({ onCancel, additionalData, setSide
         (
 
         <div className=" flex flex-col gap-3  items-start justify-start p-3 md:px-5 rounded-bl-[10px] rounded-br-[10px] rounded-tr-[10px] shadow-bs w-[568px] sm:w-full">
-          <div
-            className="flex flex-row gap-80 w-auto sm:w-full"
-          >
+          <div className="flex items-center justify-between w-full">
             <Text className="text-2xl md:text-[22px] text-blue-900 sm:text-xl w-auto" size="txtRalewayBold24">
               Score
             </Text>
@@ -494,186 +502,157 @@ const ScoreForm: React.FC<ScoreFormProps> = ({ onCancel, additionalData, setSide
               className="h-6 w-6 common-pointer"
               src={`${globalVariables.staticPath}img_icbaselineclose.svg`}
               alt="close"
-              style={{
-                marginLeft: '118px'
-              }}
               onClick={handleCloseSidebar}
             />
           </div>
-          <div className="flex flex-row items-center justify-between w-[71%] md:w-full">
-            <Text className="text-blue-900 text-lg" size="txtRalewayBold18">
-              Groups
-            </Text>
-            <Text className="text-blue-900 text-lg" size="txtRalewayBold18" style={{ marginRight: "10%" }}>
-              Sensitivity Score
-            </Text>
-          </div>
-
-          {/* Tabular-like structure */}
-          <div className="sm:gap-5 items-start justify-start overflow-x-auto w-full">
-            {scoreGroups.map((props, index) => (
-              <div key={`Row${index}`} className="flex flex-row items-center justify-between w-full">
-                {/* Column 1 - Groups with Information Modal */}
-                <div className="flex items-center justify-start w-[200px]">
-                  <div className="flex flex-col items-center justify-start w-[42px]">
-                    <div className="flex flex-col items-start justify-start p-[9px] w-[42px]">
-                      <input
-                        type="checkbox"
-                        id={`checkbox-${props.id}`}
-                        checked={checkboxStates[props.id]}
-                        onChange={() => handleCheckboxChange(props.id)}
-                        style={{ borderRadius: '4px' }}
-                      ></input>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-start justify-start w-auto">
-                    <Text
-                      className="text-base text-gray-800 tracking-[0.15px] w-auto"
-                      size="txtRalewayRomanRegular16"
-                    >
+          {/* Group cards */}
+          <div className="flex flex-col gap-2 w-full">
+            {scoreGroups.map((props, index) => {
+              const isChecked = !!checkboxStates[props.id];
+              return (
+                <div
+                  key={`Row${index}`}
+                  className={`flex flex-col rounded-xl border-2 p-3 transition-all cursor-pointer ${
+                    isChecked
+                      ? 'border-accent bg-accent/5 shadow-sm'
+                      : 'border-surface-subtle bg-white hover:border-accent/30'
+                  }`}
+                  onClick={() => handleCheckboxChange(props.id)}
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Checkbox */}
+                    <input
+                      type="checkbox"
+                      id={`checkbox-${props.id}`}
+                      checked={isChecked}
+                      onChange={(e) => { e.stopPropagation(); handleCheckboxChange(props.id); }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-5 w-5 rounded accent-[#539987] flex-shrink-0"
+                    />
+                    {/* Group name */}
+                    <span className={`flex-1 text-base font-medium ${isChecked ? 'text-primary' : 'text-text'}`}>
                       {props?.name}
-                    </Text>
+                    </span>
+                    {/* Sensitivity score badge */}
+                    <span className={`inline-flex items-center justify-center rounded-full px-3 py-0.5 text-sm font-bold ${
+                      isChecked
+                        ? 'bg-accent text-white'
+                        : 'bg-surface-muted text-text-muted'
+                    }`}>
+                      {props.sensitivity_score}
+                    </span>
                   </div>
-                </div>
 
-                {/* Column 2 - Sensitivity Score */}
-                <div className="flex sm:flex-1 flex-col font-roboto gap-4 items-start justify-start w-[100px]">
-                  <Text className="text-blue-900 text-lg" size="txtRalewayBold18">
-                    {props.sensitivity_score}
-                  </Text>
-                </div>
-
-                {/* Column 3 - Select or Manage Images Button */}
-                <div className="flex sm:flex-1 flex-col font-raleway gap-2 items-start justify-start w-[210px]" style={{ marginBottom: '2%' }}>
-                  {buttonStates.map((buttonState, btnIndex) => {
-                    if (buttonState.id === props.id) {
-                      return (
-                        <React.Fragment key={`Button-${btnIndex}`}>
-                          {!buttonState.showManageImages && (
-                            <>
-                              <Button
-                                id={`button-${props.id}`}
-                                type="button"
-                                className="!text-white-A700 cursor-pointer font-raleway min-w-[198px] text-center text-lg tracking-[0.81px]"
-                                shape="round"
-                                color="blue_gray_500"
-                                size="xs"
-                                variant="fill"
-                                // disabled upload buttons
-                                disabled={!isCheckboxChecked[props.id] ? true : false}
-                                style={{ marginTop: '10px', opacity: isCheckboxChecked[props.id]  ? 1 : 0.5 }}
-                                onClick={() => handleButtonClick(props.id)}
-                              >
-                                Upload images
-                                {pestImages[props.id]?.length ? <div style={{fontSize: "0.8rem"}}>({pestImages[props.id]?.length} images uploaded)</div> : null}
-                              </Button>
-                              <UploadModal
-                                key={`image-${props.id}`}
-                                isOpen={openImagePestId === props.id && isAddMore}
-                                onClose={closeUploadModal}
-                                onSubmit={
-                                  files => {
-                                    pestImages[props.id] = files
-                                    setOpenImagePestId(0)
+                  {/* Upload / Manage images row — only when checked */}
+                  {isChecked && (
+                    <div className="mt-2 flex items-center gap-2 pl-8" onClick={(e) => e.stopPropagation()}>
+                      {buttonStates.map((buttonState, btnIndex) => {
+                        if (buttonState.id !== props.id) return null;
+                        return (
+                          <React.Fragment key={`Button-${btnIndex}`}>
+                            {!buttonState.showManageImages && (
+                              <>
+                                <Button
+                                  id={`button-${props.id}`}
+                                  type="button"
+                                  className="!text-white-A700 cursor-pointer font-raleway text-sm tracking-[0.81px]"
+                                  shape="round"
+                                  color="blue_gray_500"
+                                  size="xs"
+                                  variant="fill"
+                                  onClick={() => handleButtonClick(props.id)}
+                                >
+                                  Upload images
+                                  {pestImages[props.id]?.length ? <span className="ml-1 text-xs">({pestImages[props.id]?.length})</span> : null}
+                                </Button>
+                                <UploadModal
+                                  key={`image-${props.id}`}
+                                  isOpen={openImagePestId === props.id && isAddMore}
+                                  onClose={closeUploadModal}
+                                  onSubmit={files => {
+                                    pestImages[props.id] = files;
+                                    setOpenImagePestId(0);
                                     const callback = () => {
-                                      const updatedButtonStates = buttonStates.map(buttonState => {
-                                        if (buttonState.id === props.id) {
-                                          return { ...buttonState, showManageImages: !buttonState.showManageImages };
-                                        }
-                                        return buttonState;
+                                      const updatedButtonStates = buttonStates.map(bs => {
+                                        if (bs.id === props.id) return { ...bs, showManageImages: !bs.showManageImages };
+                                        return bs;
                                       });
                                       setButtonStates(updatedButtonStates);
-                                      setPestImages({...pestImages})
-                                      setIsAddMore(false)
-                                    }
-                                    uploadImages(pestImages, callback)
-                                  }
-                                }/>
+                                      setPestImages({ ...pestImages });
+                                      setIsAddMore(false);
+                                    };
+                                    uploadImages(pestImages, callback);
+                                  }}
+                                />
                               </>
-                          )}
-                          {buttonState.showManageImages && (
-                          <>
-                              {isUploadingImage ? (
-                                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginLeft:'11px' }}>
-                                    <CircularProgress style={{ color: '#288b31' }} />
-                                </div>
-                              ) : (
+                            )}
+                            {buttonState.showManageImages && (
+                              <>
+                                {isUploadingImage ? (
+                                  <CircularProgress size={24} style={{ color: '#288b31' }} />
+                                ) : (
                                   <>
-                                      <Button
-                                          type="button"
-                                          className="!text-white-A700 cursor-pointer font-raleway min-w-[198px] text-center text-lg tracking-[0.81px]"
-                                          shape="round"
-                                          color="red_500"
-                                          size="xs"
-                                          variant="fill"
-                                          // disabled upload buttons
-                                          disabled={!isCheckboxChecked[props.id] ? true : false}
-                                          style={{ marginTop: '10px', opacity: isCheckboxChecked[props.id] ? 1 : 0.5 }}
-                                          onClick={() => openManageImagesModal(props.id, props.name, props.sensitivity_score, pestImages[props.id])}
-                                      >
-                                          Manage Images
-                                          {pestImages[props.id]?.length ? <div style={{ fontSize: "0.8rem" }}>({pestImages[props.id]?.length} images uploaded)</div> : null}
-                                      </Button>
-                                      <UploadModal
-                                          key={`image-${props.id}`}
-                                          isOpen={openImagePestId === props.id && isAddMore}
-                                          onClose={closeUploadModal}
-                                          onSubmit={files => {
-                                              pestImages[props.id] = files;
-                                              setOpenImagePestId(0);
-                                              const callback = () => {
-                                                setPestImages({ ...pestImages });
-                                                setIsAddMore(false);
-                                                setManageImagesModalData({
-                                                    'groups': props.name,
-                                                    'sensetivityScore': props.sensitivity_score,
-                                                    'id': props.id,
-                                                    'images': pestImages[props.id],
-                                                    'saved_group_prediction': {}
-                                                });
-                                              }
-                                              uploadImages(pestImages, callback);
-                                          }}
-                                      />
+                                    <Button
+                                      type="button"
+                                      className="!text-white-A700 cursor-pointer font-raleway text-sm tracking-[0.81px]"
+                                      shape="round"
+                                      color="red_500"
+                                      size="xs"
+                                      variant="fill"
+                                      onClick={() => openManageImagesModal(props.id, props.name, props.sensitivity_score, pestImages[props.id])}
+                                    >
+                                      Manage Images
+                                      {pestImages[props.id]?.length ? <span className="ml-1 text-xs">({pestImages[props.id]?.length})</span> : null}
+                                    </Button>
+                                    <UploadModal
+                                      key={`image-${props.id}`}
+                                      isOpen={openImagePestId === props.id && isAddMore}
+                                      onClose={closeUploadModal}
+                                      onSubmit={files => {
+                                        pestImages[props.id] = files;
+                                        setOpenImagePestId(0);
+                                        const callback = () => {
+                                          setPestImages({ ...pestImages });
+                                          setIsAddMore(false);
+                                          setManageImagesModalData({
+                                            'groups': props.name,
+                                            'sensetivityScore': props.sensitivity_score,
+                                            'id': props.id,
+                                            'images': pestImages[props.id],
+                                            'saved_group_prediction': {}
+                                          });
+                                        };
+                                        uploadImages(pestImages, callback);
+                                      }}
+                                    />
                                   </>
-                              )}
-                          </>
-                      )}
-
-                        </React.Fragment>
-                      );
-                    }
-                    return null;
-                  })}
+                                )}
+                              </>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          {/* Display calculated values */}
-          <div className="flex flex-row gap-[17px] items-start justify-start w-auto">
-            <Text
-              className="leading-[136.40%] text-blue-900 text-lg"
-              size="txtRalewayBold18"
-            >
-              <>
-                Total score:
-                <br />
-                Number of groups:
-                <br />
-                Average score:
-              </>
-            </Text>
-            <Text
-              className="leading-[136.40%] text-black-900 text-lg"
-              size="txtRalewayRomanRegular18"
-            >
-              <>
-                {isNaN(totalScore) ? 0 : totalScore.toFixed(2)}<br />
-                {numberOfGroups}<br />
-                {isNaN(averageScore) ? 0 : averageScore.toFixed(2)}
-              </>
-            </Text>
+          {/* Score summary */}
+          <div className="grid grid-cols-3 gap-2 w-full rounded-xl bg-surface-muted/50 p-3">
+            <div className="flex flex-col items-center">
+              <span className="text-caption text-text-muted font-medium">Total Score</span>
+              <span className="text-xl font-bold text-primary">{isNaN(totalScore) ? 0 : totalScore.toFixed(2)}</span>
+            </div>
+            <div className="flex flex-col items-center border-x border-surface-subtle">
+              <span className="text-caption text-text-muted font-medium">Groups</span>
+              <span className="text-xl font-bold text-primary">{numberOfGroups}</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-caption text-text-muted font-medium">Average</span>
+              <span className="text-xl font-bold text-accent">{isNaN(averageScore) ? 0 : averageScore.toFixed(2)}</span>
+            </div>
           </div>
 
           {/* Save and Cancel Buttons */}

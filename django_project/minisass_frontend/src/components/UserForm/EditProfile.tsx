@@ -67,7 +67,7 @@ const EditProfile: React.FC<EditProfileInterface> = ({
     control: (styles, {isFocused}) => ({
       ...styles,
       borderRadius: '4px',
-      width: '16.5vw',
+      width: '100%',
       borderColor: isFocused ? '#539987' : 'rgba(0, 0, 0, 0.23)',
 
     }),
@@ -78,7 +78,7 @@ const EditProfile: React.FC<EditProfileInterface> = ({
     }),
     menu: (styles) => ({
       ...styles,
-      width: '16.5vw',
+      width: '100%',
     }),
   };
 
@@ -227,7 +227,7 @@ const EditProfile: React.FC<EditProfileInterface> = ({
                       value={formData.username}
                       onChange={handleInputChange}
                       placeholder="Username"
-                      style={{borderRadius: '4px', width: '16.5vw'}}
+                      style={{borderRadius: '4px', width: '100%'}}
                       disabled={!isEdit}
                     />
                   </Grid>
@@ -254,7 +254,7 @@ const EditProfile: React.FC<EditProfileInterface> = ({
                       onChange={handleInputChange}
                       onBlur={handleEmailBlur}
                       placeholder="Email"
-                      style={{borderRadius: '4px', width: '16.5vw'}}
+                      style={{borderRadius: '4px', width: '100%'}}
                       disabled={!isEdit}
                     />
                   </Grid>
@@ -280,7 +280,7 @@ const EditProfile: React.FC<EditProfileInterface> = ({
                       value={formData.name}
                       onChange={handleInputChange}
                       placeholder="Name"
-                      style={{borderRadius: '4px', width: '16.5vw'}}
+                      style={{borderRadius: '4px', width: '100%'}}
                       disabled={!isEdit}
                     />
                   </Grid>
@@ -306,7 +306,7 @@ const EditProfile: React.FC<EditProfileInterface> = ({
                       value={formData.surname}
                       onChange={handleInputChange}
                       placeholder="Surname"
-                      style={{borderRadius: '4px', width: '16.5vw'}}
+                      style={{borderRadius: '4px', width: '100%'}}
                       disabled={!isEdit}
                     />
                   </Grid>
@@ -332,7 +332,7 @@ const EditProfile: React.FC<EditProfileInterface> = ({
                       value={formData.organisation_name}
                       onChange={handleInputChange}
                       placeholder="Organization Name"
-                      style={{borderRadius: '4px', width: '16.5vw'}}
+                      style={{borderRadius: '4px', width: '100%'}}
                       disabled={!isEdit}
                     />
                   </Grid>
@@ -378,7 +378,7 @@ const EditProfile: React.FC<EditProfileInterface> = ({
               <Grid item className={'label'}>
                 <label>Country:</label>
               </Grid>
-              <Grid item style={{ width: '16.5vw' }}>
+              <Grid item style={{ width: '100%' }}>
                 <Grid container flexDirection={'column'}>
                   <Grid item>
                     <CountrySelector
@@ -414,7 +414,7 @@ const EditProfile: React.FC<EditProfileInterface> = ({
                       value={formData.is_expert ? 'Expert' : 'Novice'}
                       onChange={handleInputChange}
                       placeholder="Level"
-                      style={{borderRadius: '4px', width: '16.5vw'}}
+                      style={{borderRadius: '4px', width: '100%'}}
                       disabled
                     />
                   </Grid>

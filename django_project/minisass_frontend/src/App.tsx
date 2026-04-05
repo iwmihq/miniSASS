@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import ReactGA from "react-ga4";
 import Routes from "./Routes";
 import Tooltip from '@mui/material/Tooltip';
 import PrivacyConsentModal from "./components/PrivacyConsentModal"
@@ -56,7 +57,7 @@ function App() {
       "switcher_horizontal_position": "left",
       "switcher_vertical_position": "bottom",
       "flag_style": "2d",
-      "flag_size": 24,
+      "flag_size": 20,
       "alt_flags": {
         "en": "usa"
       }

@@ -1,7 +1,9 @@
 export { Button } from "./Button";
+export { Card } from "./Card";
 export { Img } from "./Img";
 export { Input } from "./Input";
 export { List } from "./List";
+export { Spinner } from "./Spinner";
 export { Text } from "./Text";
 export { FloatingInput } from "./FloatingInput";
 export { SelectBox } from "./SelectBox";

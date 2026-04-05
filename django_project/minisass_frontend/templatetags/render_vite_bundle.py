@@ -16,7 +16,10 @@ def render_vite_bundle():
     """
   
     # Construct the path to the manifest file
-    manifest_path = os.path.join(settings.FRONTEND_PATH, 'src', 'dist', 'manifest.json')
+    # Vite 5+ moved the manifest to .vite/manifest.json
+    manifest_path = os.path.join(settings.FRONTEND_PATH, 'src', 'dist', '.vite', 'manifest.json')
+    if not os.path.exists(manifest_path):
+        manifest_path = os.path.join(settings.FRONTEND_PATH, 'src', 'dist', 'manifest.json')
 
     try:
         # Open and read the manifest file

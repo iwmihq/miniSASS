@@ -39,7 +39,9 @@ from monitor.views import (
     download_observations_filtered,
     get_schools,
     detail,
-    CheckSiteIsLand
+    CheckSiteIsLand,
+    ObservationCountView,
+    SiteCountView
 )
 
 router = DefaultRouter()
@@ -65,6 +67,18 @@ urlpatterns = [
         'observation-images/<int:observation_pk>/delete/<int:pk>/',
         delete_pest_image,
         name='remove-pest-image'
+    ),
+
+    # Count endpoints
+    path(
+        'observations/count/',
+        ObservationCountView.as_view(),
+        name='observation-count'
+    ),
+    path(
+        'sites/count/',
+        SiteCountView.as_view(),
+        name='site-count'
     ),
 
     # General observation URLs

@@ -1,18 +1,24 @@
+/* Map search autocomplete overrides */
 .Search .MuiInputBase-root {
   background-color: white;
-  border-radius: 0;
-  border-top-right-radius: 10px;
-  border-bottom-right-radius: 10px;
-  border-bottom-left-radius: 10px;
-}
-
-.Search .MuiInputBase-root {
-  height: 44px;
+  border-radius: 0 10px 10px 10px;
+  height: 42px;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
+  font-family: "Raleway", sans-serif;
+  font-size: 0.875rem;
 }
 
+.Search .MuiAutocomplete-root {
+  width: 100% !important;
+}
+
+/* MapLibre controls — positioned below the navigation bar */
+.maplibregl-ctrl-top-left {
+  top: 68px !important;
+  left: 4px !important;
+}
 
 .maplibregl-ctrl {
-    margin-left: 15px!important;
+  margin-left: 0 !important;
 }

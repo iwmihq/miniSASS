@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { Button, Img, List, Text } from "../../components";
+import AppShell from "../../components/AppShell";
 import CollapsibleTable from "../../components/CollapsibleTable";
-import Footer from "../../components/Footer";
-import NavigationBar from "../../components/NavigationBar";
 import Sidebar from "../../components/DownloadsSideBar";
 import Observations from "../../components/Observations";
 
@@ -187,27 +186,11 @@ const Downloads: React.FC = () => {
   
 
   return (
-    <>
+    <AppShell activePage="downloads">
       <div className="bg-white-A700 flex flex-col font-raleway items-center justify-start mx-auto w-full">
         <div className="flex flex-col items-center justify-start w-full">
-          
+
           <div className="h-[537px] md:px-5 relative w-full">
-            <header className="bg-white-A700 flex flex-col items-center justify-center md:m-[] md:max-w-[] mb-[-53px] mx-auto rounded-bl-[65px] w-full z-[1]">
-              <div className="flex md:flex-col flex-row gap-[30px] md:h-[] items-center justify-between md:m-[] md:max-w-[] mb-[17px] ml-14 md:ml-[0] w-[97%]">
-
-                {/* logo */}
-                <div className="bg-white-A700 flex flex-col h-[92px] md:h-auto items-start justify-start md:mt-0 mt-[17px] w-[77px]">
-                  <Img
-                    className="sm:bottom-[] md:bottom-[] md:h-[150px] sm:h-auto h-full object-cover md:relative sm:right-[200px] md:right-[390px] md:top-2.5 sm:top-[50px] md:w-[] w-full"
-                    src="images/img_minisasslogo1.png"
-                    alt="minisasslogoOne"
-                  />
-                </div>
-
-                <NavigationBar activePage="downloads"/>
-
-              </div>
-            </header>
           </div>
           
 
@@ -286,13 +269,11 @@ const Downloads: React.FC = () => {
           </List>
 
           
-          <Footer className="flex items-center justify-center mt-[122px] md:px-5 w-full" />
 
-          
-          
+
         </div>
       </div>
-    </>
+    </AppShell>
   );
 };
 

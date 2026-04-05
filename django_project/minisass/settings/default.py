@@ -4,7 +4,7 @@ from datetime import timedelta
 from pathlib import Path
 from collections import OrderedDict
 
-from django.core.files.storage import FileSystemStorage
+from storages.backends.s3boto3 import S3Boto3Storage
 
 from minisass.utils import absolute_path
 from drf_yasg import openapi
@@ -229,6 +229,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'django.contrib.admin',
     'django.contrib.gis',
+    'storages',
     'constance',
     'constance.backends.database',
     # custom apps here:
@@ -276,23 +277,43 @@ LOGGING = {
     }
 }
 
-# Minio config
+# S3/Minio config
 MINIO_ROOT = os.getenv('MINIO_ROOT', '/home/web/minio')
+# MINIO_BUCKET is used as the directory prefix in file paths (e.g. minisass/observations/...)
+# This must be consistent across environments so URLs in the DB remain valid.
 MINIO_BUCKET = os.getenv('MINIO_BUCKET', 'demo')
-MINION_STORAGE = FileSystemStorage(
-    location=MINIO_ROOT, base_url='/minio-media'
-)
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'minisass_authentication.backends.EmailBackend',
 ]
 
-
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY") or os.getenv("AWS_ACCESS_KEY")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY") or os.getenv("AWS_SECRET_ACCESS_KEY")
-MINIO_AI_BUCKET = os.getenv("MINIO_BUCKET")
+# MINIO_AI_BUCKET is the actual S3 bucket name for boto3 operations.
+# On staging this differs from MINIO_BUCKET (e.g. minisass-staging vs minisass).
+MINIO_AI_BUCKET = os.getenv("MINIO_AI_BUCKET", os.getenv("MINIO_BUCKET", "demo"))
 MINIO_ENDPOINT = os.getenv("MINIO_URL")
+
+
+# Custom S3 storage that returns /minio-media/ URLs for nginx proxy
+class MinisassS3Storage(S3Boto3Storage):
+    """S3 storage backend that generates /minio-media/ URLs for nginx proxy."""
+    def url(self, name):
+        return f'/minio-media/{name}'
+
+
+# S3 storage instance used by model FileFields
+MINION_STORAGE = MinisassS3Storage(
+    access_key=MINIO_ACCESS_KEY,
+    secret_key=MINIO_SECRET_KEY,
+    bucket_name=MINIO_AI_BUCKET,
+    region_name=os.getenv('AWS_S3_REGION_NAME', 'af-south-1'),
+    endpoint_url=MINIO_ENDPOINT if MINIO_ENDPOINT else None,
+    default_acl='public-read',
+    querystring_auth=False,
+    file_overwrite=False,
+)
 
 ENABLE_GEOCODING = True
 

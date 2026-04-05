@@ -156,7 +156,7 @@ export default function Search(props: Interface) {
   return (
     <Autocomplete
       className='Search'
-      sx={{ width: 300, height: 41 }}
+      sx={{ width: '100%', maxWidth: 300, height: 41 }}
       filterOptions={(x) => x}
       getOptionLabel={(option) => option.label}
       options={options}

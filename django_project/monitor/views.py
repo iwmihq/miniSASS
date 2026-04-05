@@ -30,7 +30,7 @@ from rest_framework.response import Response
 
 from monitor.forms import SiteForm, ObservationForm, CoordsForm, MapForm
 from monitor.models import Schools, Sites, Observations, SiteImage, ObservationPestImage, Pest
-from monitor.utils import safe_copy, zip_directory
+from monitor.utils import safe_copy, safe_save_field_file, zip_directory
 
 
 def get_email_content(observation, new_site=False):
@@ -339,12 +339,16 @@ class DownloadObservations(APIView):
                 if not os.path.exists(site_image_path):
                     os.makedirs(site_image_path)
                 for img in SiteImage.objects.filter(site=observations.first().site):
-                    final_name = safe_copy(img.image.path, site_image_path)
+                    try:
+                        final_name = safe_save_field_file(img.image, site_image_path)
+                    except (FileNotFoundError, Exception):
+                        continue
                     site_images.append({
                         'id': img.id,
                         'site': img.site_id,
                         'image': os.sep.join(final_name.split(os.sep)[-3:]),
                     })
+                if site_images:
                     dataframe = DataFrame.from_records(site_images)
                     site_images_table = os.path.join(dir_path, 'site_images.csv')
                     dataframe.to_csv(site_images_table, index=False)
@@ -364,20 +368,24 @@ class DownloadObservations(APIView):
                             # if the demo_folder directory is not present
                             # then create it.
                             os.makedirs(pest_path)
-                        final_name = safe_copy(
-                            img.image.path,
-                            pest_path,
-                            os.path.basename(img.image.name)
-                        )
+                        try:
+                            final_name = safe_save_field_file(
+                                img.image,
+                                pest_path,
+                                os.path.basename(img.image.name)
+                            )
+                        except (FileNotFoundError, Exception):
+                            continue
                         observation_images.append({
                             'id': img.id,
                             'observation': img.observation_id,
                             'pest': img.pest_id,
                             'image': os.sep.join(final_name.split(os.sep)[-5:]),
                         })
-                dataframe = DataFrame.from_records(observation_images)
-                observation_images_table = os.path.join(dir_path, 'observation_images.csv')
-                dataframe.to_csv(observation_images_table, index=False)
+                if observation_images:
+                    dataframe = DataFrame.from_records(observation_images)
+                    observation_images_table = os.path.join(dir_path, 'observation_images.csv')
+                    dataframe.to_csv(observation_images_table, index=False)
 
             pests = Pest.objects.values()
             dataframe = DataFrame.from_records(pests)
@@ -655,3 +663,17 @@ class CheckSiteIsLand(APIView):
             cursor.execute(sql_query)
             is_land = cursor.fetchall()[0][0]
             return Response({'is_land': is_land})
+
+
+class ObservationCountView(APIView):
+    """Return the total number of observations."""
+    def get(self, request):
+        count = Observations.objects.count()
+        return Response({'count': count})
+
+
+class SiteCountView(APIView):
+    """Return the total number of sites."""
+    def get(self, request):
+        count = Sites.objects.count()
+        return Response({'count': count})

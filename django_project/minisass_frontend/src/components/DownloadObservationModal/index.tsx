@@ -66,7 +66,7 @@ const DownloadObservationForm: React.FC<DownloadObservationFormProps> = ({ isOpe
     try {
       const startDate = formData.startDate.format('YYYY-MM-DD');
       const endDate = formData.endDate.format('YYYY-MM-DD');
-      const url = `${DOWNLOAD_OBSERVATIONS_URL}/${siteId}?type=${formData.type}&start_date=${startDate}&end_date=${endDate}&include_image=${formData.includeImage}`;
+      const url = `${DOWNLOAD_OBSERVATIONS_URL}${siteId}/?type=${formData.type}&start_date=${startDate}&end_date=${endDate}&include_image=${formData.includeImage}`;
       // axios.defaults.headers.common['Authorization'] = `Bearer ${state.user.access_token}`;
       const response = await axios.get(url, { responseType: 'blob' });
 
@@ -117,6 +117,7 @@ const DownloadObservationForm: React.FC<DownloadObservationFormProps> = ({ isOpe
       isOpen={isOpen}
       onRequestClose={handleCloseModal}
       style={{
+        overlay: { zIndex: 50, backgroundColor: 'rgba(0, 0, 0, 0.5)' },
         content: {
           top: '50%',
           left: '50%',
@@ -124,8 +125,10 @@ const DownloadObservationForm: React.FC<DownloadObservationFormProps> = ({ isOpe
           bottom: 'auto',
           marginRight: '-50%',
           transform: 'translate(-50%, -50%)',
-          width: '605px',
-          height: '400px',
+          width: 'calc(100% - 32px)',
+          maxWidth: '605px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           borderRadius: '0px 25px 25px 25px',
           border: 'none',
           background: 'white',
@@ -139,13 +142,13 @@ const DownloadObservationForm: React.FC<DownloadObservationFormProps> = ({ isOpe
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-start',
-            padding: '32px',
+            padding: '24px',
             gap: '18px',
             position: 'relative',
-            width: '605px',
-            height: '400px',
+            width: '100%',
             background: 'white',
             borderRadius: '0px 25px 25px 25px',
+            boxSizing: 'border-box',
           }}
         >
           <div
@@ -155,8 +158,7 @@ const DownloadObservationForm: React.FC<DownloadObservationFormProps> = ({ isOpe
               alignItems: 'flex-start',
               padding: '0px',
               gap: '10px',
-              width: '541px',
-              height: '33px',
+              width: '100%',
             }}
           >
             <h3
@@ -195,7 +197,7 @@ const DownloadObservationForm: React.FC<DownloadObservationFormProps> = ({ isOpe
               flexDirection: 'column',
               alignItems: 'flex-start',
               gap: '6px',
-              width: '541px',
+              width: '100%',
             }}
           >
         {showHeading && (
@@ -215,7 +217,7 @@ const DownloadObservationForm: React.FC<DownloadObservationFormProps> = ({ isOpe
             control: (styles, { isFocused }) => ({
               ...styles,
               borderRadius: '4px',
-              width: '245px',
+              width: '100%', maxWidth: '245px',
               borderColor: isFocused ? '#539987' : 'rgba(0, 0, 0, 0.23)',
             }),
             option: (styles, { isFocused }) => ({
@@ -225,7 +227,7 @@ const DownloadObservationForm: React.FC<DownloadObservationFormProps> = ({ isOpe
             }),
             menu: (styles) => ({
               ...styles,
-              width: '245px',
+              width: '100%', maxWidth: '245px',
             }),
           }}
         />
@@ -246,7 +248,7 @@ const DownloadObservationForm: React.FC<DownloadObservationFormProps> = ({ isOpe
             control: (styles, { isFocused }) => ({
               ...styles,
               borderRadius: '4px',
-              width: '245px',
+              width: '100%', maxWidth: '245px',
               borderColor: isFocused ? '#539987' : 'rgba(0, 0, 0, 0.23)',
             }),
             option: (styles, { isFocused }) => ({
@@ -256,7 +258,7 @@ const DownloadObservationForm: React.FC<DownloadObservationFormProps> = ({ isOpe
             }),
             menu: (styles) => ({
               ...styles,
-              width: '245px',
+              width: '100%', maxWidth: '245px',
             }),
           }}
         />
@@ -290,8 +292,7 @@ const DownloadObservationForm: React.FC<DownloadObservationFormProps> = ({ isOpe
                 flexDirection: 'column',
                 alignItems: 'flex-end',
                 gap: '10px',
-                width: '541px',
-                height: '37px'
+                width: '100%',
               }}
             >
               <Button

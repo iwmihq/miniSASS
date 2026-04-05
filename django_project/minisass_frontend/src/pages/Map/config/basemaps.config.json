@@ -5,9 +5,7 @@
       "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png?noWrap=true"
     ],
     "type": "raster",
-    "maxNativeZoom": 19,
-    "maxZoom": 24,
-    "noWrap": "true",
+    "maxzoom": 19,
     "tileSize": 256
   },
   {
@@ -16,9 +14,7 @@
       "https://a.tiles.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}@2x.jpg?access_token=pk.eyJ1IjoiYWxla29yIiwiYSI6ImNqdGZwc2FoaDBkNjAzeXJ1b3B6bzR6Z2IifQ.m6OQgD-IfmhaVS3Xh5XNoQ"
     ],
     "type": "raster",
-    "maxNativeZoom": 19,
-    "maxZoom": 24,
-    "noWrap": "true",
+    "maxzoom": 22,
     "tileSize": 256
   }
 ]
