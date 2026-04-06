@@ -82,7 +82,7 @@ FRONTEND_DIST_ROOT = PROJECT_PATH.replace('/minisass', '/minisass_frontend')
 MEDIA_ROOT = os.getenv('MEDIA_ROOT', DEFAULT_MEDIA_ROOT)
 MEDIA_URL = os.getenv('MEDIA_URL', DEFAULT_MEDIA_URL)
 STATIC_ROOT = os.getenv('STATIC_ROOT', DEFAULT_STATIC_ROOT)
-# STATIC_URL = os.getenv('STATIC_URL', DEFAULT_STATIC_URL)
+STATIC_URL = os.getenv('STATIC_URL', DEFAULT_STATIC_URL)
 
 # Frontend path to be used in vite template
 FRONTEND_PATH = FRONTEND_DIST_ROOT
@@ -97,32 +97,8 @@ AWS_QUERYSTRING_AUTH = False
 AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
 # AWS_S3_ENDPOINT_URL = f"https://s3.{AWS_S3_REGION_NAME}.amazonaws.com"
 
-STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
+# STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
 
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        "OPTIONS": {
-            "bucket_name": AWS_STORAGE_BUCKET_NAME,
-            "region_name": AWS_S3_REGION_NAME,
-            # "endpoint_url": AWS_S3_ENDPOINT_URL,
-            "custom_domain": AWS_S3_CUSTOM_DOMAIN,
-            "querystring_auth": AWS_QUERYSTRING_AUTH,
-        },
-    },
-    "staticfiles": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        "OPTIONS": {
-            "bucket_name": AWS_STORAGE_BUCKET_NAME,
-            "region_name": AWS_S3_REGION_NAME,
-            # "endpoint_url": AWS_S3_ENDPOINT_URL,
-            "custom_domain": AWS_S3_CUSTOM_DOMAIN,
-            "location": AWS_LOCATION,
-            "default_acl": "public-read",
-            "querystring_auth": False,
-        },
-    },
-}
 
 
 # Additional locations of static files
