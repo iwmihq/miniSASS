@@ -35,7 +35,7 @@ fi
 
 pushd /home/web/django_project || exit
 echo 'Initialize project.'
-python manage.py collectstatic --clear --noinput
+python manage.py collectstatic --noinput #--clear
 python manage.py migrate
 
 
