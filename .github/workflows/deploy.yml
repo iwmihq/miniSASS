@@ -39,8 +39,14 @@ jobs:
         run: |
           if [ "${{ github.ref_name }}" = "main" ]; then
             echo "ENV=prod" >> $GITHUB_ENV
+            echo "S3_MEDIA_BUCKET=minisass" >> $GITHUB_ENV
+            echo "MINIO_AI_BUCKET=minisass" >> $GITHUB_ENV
+            echo "MINIO_BUCKET=minisass" >> $GITHUB_ENV
           else
             echo "ENV=staging" >> $GITHUB_ENV
+            echo "S3_MEDIA_BUCKET=minisass-staging" >> $GITHUB_ENV
+            echo "MINIO_AI_BUCKET=minisass-staging" >> $GITHUB_ENV
+            echo "MINIO_BUCKET=minisass-staging" >> $GITHUB_ENV
           fi
 
       - name: Build, tag and push Django Image
@@ -103,15 +109,6 @@ jobs:
         working-directory: deployment
         # replace the placeholder in the task definition with the URL to the new build on ECR
         run: |
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            echo "S3_MEDIA_BUCKET=minisass" >> $GITHUB_ENV
-            echo "MINIO_AI_BUCKET=minisass" >> $GITHUB_ENV
-            echo "MINIO_BUCKET=minisass" >> $GITHUB_ENV
-          else
-            echo "S3_MEDIA_BUCKET=minisass-staging" >> $GITHUB_ENV
-            echo "MINIO_AI_BUCKET=minisass-staging" >> $GITHUB_ENV
-            echo "MINIO_BUCKET=minisass-staging" >> $GITHUB_ENV
-          fi
           sed -i "s|<S3_MEDIA_BUCKET>|$S3_MEDIA_BUCKET|g" taskdef.json
           sed -i "s|<MINIO_AI_BUCKET>|$MINIO_AI_BUCKET|g" taskdef.json
           sed -i "s|<MINIO_BUCKET>|$MINIO_BUCKET|g" taskdef.json
