@@ -35,12 +35,20 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
         id: login-ecr
 
+      - name: Set Environment Tag
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            ENV=prod" >> $GITHUB_ENV
+          else
+            echo "ENV=staging" >> $GITHUB_ENV
+          fi
+
       - name: Build, tag and push Django Image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: iwmi-minisass
           # tagging with the environment 'staging-datetime ''
-          IMAGE_TAG: 'staging-django-${{ steps.ts.outputs.time  }}'
+          IMAGE_TAG: '${{ env.ENV }}-django-${{ steps.ts.outputs.time }}'
         run: |
           FULL_IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           # to make it available in ECS step
@@ -54,7 +62,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: iwmi-minisass
           # tagging with the environment 'staging-datetime ''
-          IMAGE_TAG: 'staging-pg_tileserv-${{ steps.ts.outputs.time  }}'
+          IMAGE_TAG: '${{ env.ENV }}-pg_tileserv-${{ steps.ts.outputs.time }}'
         run: |
           FULL_TILES_IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           # to make it available in ECS step
@@ -68,7 +76,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: iwmi-minisass
           # tagging with the environment 'staging-datetime ''
-          IMAGE_TAG: 'staging-nginx-${{ steps.ts.outputs.time  }}'
+          IMAGE_TAG: '${{ env.ENV }}-nginx-${{ steps.ts.outputs.time }}'
         run: |
           FULL_NGINX_IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           # to make it available in ECS step
@@ -91,7 +99,6 @@ jobs:
           fi
 
 
-          
       - name: Render task definition
         working-directory: deployment
         # replace the placeholder in the task definition with the URL to the new build on ECR
@@ -108,7 +115,7 @@ jobs:
           sed -i "s|<S3_MEDIA_BUCKET>|$S3_MEDIA_BUCKET|g" taskdef.json
           sed -i "s|<MINIO_AI_BUCKET>|$MINIO_AI_BUCKET|g" taskdef.json
           sed -i "s|<MINIO_BUCKET>|$MINIO_BUCKET|g" taskdef.json
-          sed -i "s|<ECR_DJANGO_IMAGE_URI>|$FULL_DJANGO_IMAGE_URI|g" taskdef.json
+          sed -i "s|<ECR_DJANGO_IMAGE_URI>|$FULL_IMAGE_URI|g" taskdef.json
           sed -i "s|<ECR_TILES_IMAGE_URI>|$FULL_TILES_IMAGE_URI|g" taskdef.json
           sed -i "s|<ECR_NGINX_IMAGE_URI>|$FULL_NGINX_IMAGE_URI|g" taskdef.json
           sed -i "s|<AWS_ACCOUNT_ID>|${{ secrets.AWS_ACCOUNT_ID }}|g" taskdef.json
