@@ -33,21 +33,11 @@
       "environment": [
         {
           "name": "S3_MEDIA_BUCKET",
-          "value": "minisass-staging"
+          "value": "<S3_MEDIA_BUCKET>"
         },
         {
           "name": "S3_MEDIA_REGION",
           "value": "<AWS_REGION>"
-        }
-      ],
-      "mountPoints": [
-        {
-          "sourceVolume": "efs-media",
-          "containerPath": "/home/web/media"
-        },
-        {
-          "sourceVolume": "efs-media",
-          "containerPath": "/home/web/static"
         }
       ],
       "logConfiguration": {
@@ -70,10 +60,6 @@
         }
       ],
       "environment": [
-        {
-          "name": "DATABASE_HOST",
-          "value": "<RDS_DATABASE_HOST>"
-        },
         {
           "name": "DATABASE_PORT",
           "value": "5432"
@@ -100,11 +86,11 @@
         },
         {
           "name": "MINIO_BUCKET",
-          "value": "minisass"
+          "value": "<MINIO_BUCKET>"
         },
         {
           "name": "MINIO_AI_BUCKET",
-          "value": "minisass-staging"
+          "value": "<MINIO_AI_BUCKET>"
         },
         {
           "name": "AWS_S3_REGION_NAME",
@@ -116,6 +102,10 @@
         }
       ],
       "secrets": [
+                {
+          "name": "DATABASE_HOST",
+          "valueFrom": "<SECRET_ARN>:RDS_DATABASE_HOST::"
+        },
         {
           "name": "POSTGRES_USER",
           "valueFrom": "<SECRET_ARN>:POSTGRES_USER::"
@@ -152,18 +142,7 @@
           "awslogs-region": "<AWS_REGION>",
           "awslogs-stream-prefix": "django"
         }
-      },
-      "mountPoints": [
-        {
-          "sourceVolume": "efs-media",
-          "containerPath": "/home/web/media",
-          "readOnly": false
-        },
-        {
-          "sourceVolume": "efs-media",
-          "containerPath": "/home/web/static"
-        }
-      ]
+      }
     },
     {
       "name": "tiles",
@@ -195,15 +174,6 @@
           "valueFrom": "<SECRET_ARN>:TILES_DATABASE_URL::"
         }
       ]
-    }
-  ],
-  "volumes": [
-    {
-      "name": "efs-media",
-      "efsVolumeConfiguration": {
-        "fileSystemId": "<MINISASS_EFS_FILE_SYSTEM_ID>",
-        "transitEncryption": "ENABLED"
-      }
     }
   ]
 }

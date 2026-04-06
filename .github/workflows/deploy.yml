@@ -77,26 +77,42 @@ jobs:
           docker push "$FULL_NGINX_IMAGE_URI"
       
    
-      
-      - name: Determine Configs
+      - name: Determine Secrets Configs
         id: secret
         run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "Using PRODUCTION config"
+            echo "SECRET_ARN=arn:aws:secretsmanager:${{ secrets.AWS_DEPLOYMENT_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:secret:prod/minisass-pTZzPUs" >> $GITHUB_ENV
+            echo "CLUSTER_NAME=iwmi-prod-cluster-afsouth1" >> $GITHUB_ENV
+          else
+            echo "Using STAGING config"
             echo "SECRET_ARN=arn:aws:secretsmanager:${{ secrets.AWS_DEPLOYMENT_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:secret:staging/minisass-4L3Wd0" >> $GITHUB_ENV
             echo "CLUSTER_NAME=iwmi-staging-cluster-afsouth1" >> $GITHUB_ENV
+          fi
+
 
           
       - name: Render task definition
         working-directory: deployment
         # replace the placeholder in the task definition with the URL to the new build on ECR
         run: |
-         
-          sed -i "s|<ECR_DJANGO_IMAGE_URI>|$FULL_IMAGE_URI|g" taskdef.json
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "S3_MEDIA_BUCKET=minisass" >> $GITHUB_ENV
+            echo "MINIO_AI_BUCKET=minisass" >> $GITHUB_ENV
+            echo "MINIO_BUCKET=minisass" >> $GITHUB_ENV
+          else
+            echo "S3_MEDIA_BUCKET=minisass-staging" >> $GITHUB_ENV
+            echo "MINIO_AI_BUCKET=minisass-staging" >> $GITHUB_ENV
+            echo "MINIO_BUCKET=minisass-staging" >> $GITHUB_ENV
+          fi
+          sed -i "s|<S3_MEDIA_BUCKET>|$S3_MEDIA_BUCKET|g" taskdef.json
+          sed -i "s|<MINIO_AI_BUCKET>|$MINIO_AI_BUCKET|g" taskdef.json
+          sed -i "s|<MINIO_BUCKET>|$MINIO_BUCKET|g" taskdef.json
+          sed -i "s|<ECR_DJANGO_IMAGE_URI>|$FULL_DJANGO_IMAGE_URI|g" taskdef.json
           sed -i "s|<ECR_TILES_IMAGE_URI>|$FULL_TILES_IMAGE_URI|g" taskdef.json
           sed -i "s|<ECR_NGINX_IMAGE_URI>|$FULL_NGINX_IMAGE_URI|g" taskdef.json
           sed -i "s|<AWS_ACCOUNT_ID>|${{ secrets.AWS_ACCOUNT_ID }}|g" taskdef.json
           sed -i "s|<AWS_REGION>|${{ secrets.AWS_DEPLOYMENT_REGION }}|g" taskdef.json
-          sed -i "s|<RDS_DATABASE_HOST>|${{ secrets.RDS_DATABASE_HOST }}|g" taskdef.json
-          sed -i "s|<MINISASS_EFS_FILE_SYSTEM_ID>|${{ secrets.MINISASS_EFS_FILE_SYSTEM_ID }}|g" taskdef.json
           sed -i "s|<SECRET_ARN>|$SECRET_ARN|g" taskdef.json
           
       
