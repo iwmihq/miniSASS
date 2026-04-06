@@ -87,6 +87,15 @@ STATIC_URL = os.getenv('STATIC_URL', DEFAULT_STATIC_URL)
 # Frontend path to be used in vite template
 FRONTEND_PATH = FRONTEND_DIST_ROOT
 
+
+AWS_STORAGE_BUCKET_NAME = os.getenv("MINIO_BUCKET")
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "af-south-1")
+
+STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+STATIC_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/static/"
+
+
 # Additional locations of static files
 STATICFILES_DIRS = (
     absolute_path('minisass', 'static'),
