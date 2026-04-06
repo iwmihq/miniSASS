@@ -59,23 +59,30 @@ services:
       exit 0;
       "
 
+  # mount:
+  #   image: kartoza/s3mount
+  #   build:
+  #     context: deployment/docker-s3-bucket
+  #   privileged: true
+  #   environment:
+  #     - AWS_ACCESS_KEY=${MINIO_ROOT_USER}
+  #     - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
+  #     - S3_MOUNT_DIRECTORY=/web
+  #     - S3_BUCKET_NAME=${BUCKET}
+  #     # URL can be an amazon S3 bucket so that we can mount it
+  #     - MINIO_URL=http://minio:9000/
+  #   volumes:
+  #     - minio_images:/web
+  #   depends_on:
+  #     minio:
+  #       condition: service_started
+
+  # Build failed with the service above, so I replaced with a custom image as documented on https://kartoza.github.io/miniSASS/developer/install/#installation-steps:~:text=of%20your%20choice.-,Optional,-%3A%20Adjust%20the%20build
   mount:
     image: kartoza/s3mount
     build:
-      context: deployment/docker-s3-bucket
-    privileged: true
-    environment:
-      - AWS_ACCESS_KEY=${MINIO_ROOT_USER}
-      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
-      - S3_MOUNT_DIRECTORY=/web
-      - S3_BUCKET_NAME=${BUCKET}
-      # URL can be an amazon S3 bucket so that we can mount it
-      - MINIO_URL=http://minio:9000/
-    volumes:
-      - minio_images:/web
-    depends_on:
-      minio:
-        condition: service_started
+      context: .
+      dockerfile: ./deployment/docker-s3-bucket/Dockerfile
 
   django:
     build:
@@ -101,6 +108,7 @@ services:
       - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-minisass_admin}
       - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-secure_minio_secret}
       - MINIO_AI_BUCKET=${BUCKET}
+      # Not used in the code. 
       - MINIO_ENDPOINT=${MINIO_URL:-http://minio:9000}
       - MINIO_URL=${MINIO_URL:-http://minio:9000}
       - ALLOWED_HOSTS='*'

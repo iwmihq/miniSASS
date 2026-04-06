@@ -84,6 +84,7 @@ const UserFormModal: React.FC<FormModalProps> = ({
       isOpen={isOpen}
       onRequestClose={onClose}
       style={{
+        overlay: { zIndex: 50, backgroundColor: 'rgba(0, 0, 0, 0.5)' },
         content: {
           top: '50%',
           left: '50%',
@@ -91,12 +92,15 @@ const UserFormModal: React.FC<FormModalProps> = ({
           bottom: 'auto',
           marginRight: '-50%',
           transform: 'translate(-50%, -50%)',
-          width: '100%',
-          maxWidth: '50vw',
+          width: 'calc(100% - 32px)',
+          maxWidth: '600px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           background: 'white',
           border: 'none',
           borderRadius: '0px 25px 25px 25px',
-          overflowX: 'hidden'
+          overflowX: 'hidden',
+          padding: 0,
         },
       }}
     >
@@ -127,7 +131,7 @@ const UserFormModal: React.FC<FormModalProps> = ({
               color="blue_gray_500"
               size="xs"
               variant="fill"
-              style={{ marginLeft: "65%" }}
+              style={{ marginLeft: "auto", display: 'block' }}
               onClick={closeSuccessMessage}
             >
               Ok
@@ -142,20 +146,20 @@ const UserFormModal: React.FC<FormModalProps> = ({
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-start',
-            padding: '32px',
+            padding: '24px',
             gap: '18px',
             position: 'relative',
+            width: '100%',
+            boxSizing: 'border-box',
           }}
         >
           <div
             style={{
               display: 'flex',
               flexDirection: 'row',
-              alignItems: 'flex-start',
-              padding: '0px',
-              gap: '55%',
-              width: '60vw',
-              height: '33px',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
             }}
           >
             <h3
@@ -163,10 +167,10 @@ const UserFormModal: React.FC<FormModalProps> = ({
                 fontFamily: 'Raleway',
                 fontStyle: 'normal',
                 fontWeight: 700,
-                alignItems: 'flex-start',
                 fontSize: '24px',
                 lineHeight: '136.4%',
                 color: '#539987',
+                margin: 0,
               }}
             >
               Update Account
@@ -176,45 +180,74 @@ const UserFormModal: React.FC<FormModalProps> = ({
               src={`${globalVariables.staticPath}img_icbaselineclose.svg`}
               alt="close"
               onClick={onClose}
-              style={{marginLeft: '30px'}}
             />
           </div>
           <Box
-            sx={{bgcolor: 'background.paper', display: 'flex', width: '100%'}}
+            sx={{
+              bgcolor: 'background.paper',
+              width: '100%',
+              display: { xs: 'block', sm: 'flex' },
+            }}
           >
-            <TabPanel value={value} index={0}>
-              <EditProfile
-                setLoading={setLoading}
-                setSuccess={setSuccess}
-                setItemUpdated={setItemUpdated}
-              />
-            </TabPanel>
-            <TabPanel value={value} index={1}>
-              <EditPassword
-                setLoading={setLoading}
-                setSuccess={setSuccess}
-                setItemUpdated={setItemUpdated}
-              />
-            </TabPanel>
-            <TabPanel value={value} index={2}>
-              <UploadCertificate
-                setLoading={setLoading}
-                setSuccess={setSuccess}
-                setItemUpdated={setItemUpdated}
-              />
-            </TabPanel>
+            {/* Tabs — horizontal on mobile, vertical on desktop */}
             <Tabs
               orientation="vertical"
               variant="scrollable"
               value={value}
               onChange={handleChange}
-              aria-label="Vertical tabs example"
-              sx={{borderRight: 1, borderColor: 'divider', minWidth: '200px'}}
+              aria-label="Account settings tabs"
+              sx={{
+                display: { xs: 'none', sm: 'flex' },
+                borderRight: 1,
+                borderColor: 'divider',
+                minWidth: '180px',
+                flexShrink: 0,
+              }}
             >
               <Tab label="Profile" {...a11yProps(0)} />
               <Tab label="Change Password" {...a11yProps(2)} />
               <Tab label="Upload Certificate" {...a11yProps(3)} />
             </Tabs>
+            <Tabs
+              value={value}
+              onChange={handleChange}
+              variant="scrollable"
+              scrollButtons="auto"
+              aria-label="Account settings tabs"
+              sx={{
+                display: { xs: 'flex', sm: 'none' },
+                borderBottom: 1,
+                borderColor: 'divider',
+                mb: 1,
+              }}
+            >
+              <Tab label="Profile" {...a11yProps(0)} />
+              <Tab label="Password" {...a11yProps(2)} />
+              <Tab label="Certificate" {...a11yProps(3)} />
+            </Tabs>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <TabPanel value={value} index={0}>
+                <EditProfile
+                  setLoading={setLoading}
+                  setSuccess={setSuccess}
+                  setItemUpdated={setItemUpdated}
+                />
+              </TabPanel>
+              <TabPanel value={value} index={1}>
+                <EditPassword
+                  setLoading={setLoading}
+                  setSuccess={setSuccess}
+                  setItemUpdated={setItemUpdated}
+                />
+              </TabPanel>
+              <TabPanel value={value} index={2}>
+                <UploadCertificate
+                  setLoading={setLoading}
+                  setSuccess={setSuccess}
+                  setItemUpdated={setItemUpdated}
+                />
+              </TabPanel>
+            </Box>
           </Box>
         </div>
       )

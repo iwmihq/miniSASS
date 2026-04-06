@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Text } from "../../components";
-import Footer from "../../components/Footer";
+import AppShell from "../../components/AppShell";
 import { ForgotPasswordForm } from "../../components/ForgotPasswordForm";
 import PasswordResetForm from "../../components/PasswordResetForm";
 
@@ -20,10 +20,10 @@ const PasswordResetPage: React.FC = () => {
 
 
   return (
-    <>
+    <AppShell>
       <div className="bg-white-A700 flex flex-col font-raleway items-center justify-start mx-auto pb-[5px] w-full">
         <div className="h-[282px] md:px-5 relative w-full">
-          
+
           <div className="bg-gray-200 flex flex-col items-start justify-end mt-auto mx-auto p-12 md:px-10 sm:px-5 relative rounded-br-[65px] md:top-[-105px] sm:top-[-80px] top-[0px] md:w-[102%] sm:w-[144%] w-full">
             <div className="flex flex-col items-center justify-start md:ml-[0] ml-[79px] mt-[61px]">
               <Text
@@ -36,7 +36,7 @@ const PasswordResetPage: React.FC = () => {
           </div>
         </div>
 
-       
+
         <div className="flex flex-col gap-9 items-start justify-start w-auto sm:w-full">
           {/* Display the appropriate form based on the state and token validation. */
           isForgotPassword ? (
@@ -45,16 +45,15 @@ const PasswordResetPage: React.FC = () => {
             <PasswordResetForm uid={uid} token={token} />
           )}
         </div>
-       
+
        <br />
         <p style={{ textAlign: 'center' }}>
           <span className="common-pointer" style={{ color: '#539987' }} onClick={() => (window.location.href = "/")}>Go Back</span>
         </p>
-       
-       
-        <Footer className="flex items-center justify-center mt-28 md:px-5 sm:w-[144%] w-full" />
+
+
       </div>
-    </>
+    </AppShell>
   );
 };
 

@@ -169,7 +169,7 @@ const EditPassword: React.FC<EditPasswordInterface> = ({
                   value={formData.old_password}
                   onChange={handleInputChange}
                   placeholder="Old Password"
-                  style={{borderRadius: '4px', width: '16.5vw'}}
+                  style={{borderRadius: '4px', width: '100%'}}
                 />
               </Grid>
             </Grid>
@@ -188,10 +188,10 @@ const EditPassword: React.FC<EditPasswordInterface> = ({
                       value={formData.password}
                       onChange={handleInputChange}
                       placeholder="New Password"
-                      style={{borderRadius: '4px', width: '16.5vw'}}
+                      style={{borderRadius: '4px', width: '100%'}}
                     />
                   </Grid>
-                  <Grid item style={{width: '16.5vw'}}>
+                  <Grid item style={{width: '100%'}}>
                     {remainingRequirements.uppercase && <span style={{ color: 'red' }}>At least one uppercase letter is required.<br /></span>}
                     {remainingRequirements.lowercase && <span style={{ color: 'red' }}>At least one lowercase letter is required.<br /></span>}
                     {remainingRequirements.digit && <span style={{ color: 'red' }}>At least one digit is required.<br /></span>}
@@ -217,7 +217,7 @@ const EditPassword: React.FC<EditPasswordInterface> = ({
                       value={formData.confirm_password}
                       onChange={handleInputChange}
                       placeholder="Confirm New password"
-                      style={{borderRadius: '4px', width: '16.5vw'}}
+                      style={{borderRadius: '4px', width: '100%'}}
                     />
                   </Grid>
                   <Grid item>

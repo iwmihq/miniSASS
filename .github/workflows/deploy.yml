@@ -1,0 +1,126 @@
+name: Build and push to ECR and deploy to ECS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get timestamp
+        id: ts
+        run: |
+          # Format: YYYY-MM-DD-HH-MM-SS
+          TIME=$(date +'%Y-%m-%d-%H-%M-%S')
+          echo "time=$TIME" >> $GITHUB_OUTPUT
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # these roles have been created on IAM. This was the first step completed.
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/GitHub-Actions-Production-Deployment-Role 
+          aws-region: ${{secrets.AWS_DEPLOYMENT_REGION}}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        id: login-ecr
+
+      - name: Build, tag and push Django Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: iwmi-minisass
+          # tagging with the environment 'staging-datetime ''
+          IMAGE_TAG: 'staging-django-${{ steps.ts.outputs.time  }}'
+        run: |
+          FULL_IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          # to make it available in ECS step
+          echo "FULL_IMAGE_URI=$FULL_IMAGE_URI" >> $GITHUB_ENV
+          docker build -t "$FULL_IMAGE_URI" -f ./deployment/docker/Dockerfile .
+          docker push "$FULL_IMAGE_URI"
+       
+      
+      - name: Build, tag and push Tiles Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: iwmi-minisass
+          # tagging with the environment 'staging-datetime ''
+          IMAGE_TAG: 'staging-pg_tileserv-${{ steps.ts.outputs.time  }}'
+        run: |
+          FULL_TILES_IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          # to make it available in ECS step
+          echo "FULL_TILES_IMAGE_URI=$FULL_TILES_IMAGE_URI" >> $GITHUB_ENV
+          docker build -t "$FULL_TILES_IMAGE_URI" -f ./deployment/docker-tiles/Dockerfile .
+          docker push "$FULL_TILES_IMAGE_URI"
+     
+      
+      - name: Build, tag and push NGINX Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: iwmi-minisass
+          # tagging with the environment 'staging-datetime ''
+          IMAGE_TAG: 'staging-nginx-${{ steps.ts.outputs.time  }}'
+        run: |
+          FULL_NGINX_IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          # to make it available in ECS step
+          echo "FULL_NGINX_IMAGE_URI=$FULL_NGINX_IMAGE_URI" >> $GITHUB_ENV
+          docker build -t "$FULL_NGINX_IMAGE_URI"  -f ./deployment/docker-nginx/Dockerfile .
+          docker push "$FULL_NGINX_IMAGE_URI"
+      
+   
+      - name: Determine Secrets Configs
+        id: secret
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "Using PRODUCTION config"
+            echo "SECRET_ARN=arn:aws:secretsmanager:${{ secrets.AWS_DEPLOYMENT_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:secret:prod/minisass-pTZzPUs" >> $GITHUB_ENV
+            echo "CLUSTER_NAME=iwmi-prod-cluster-afsouth1" >> $GITHUB_ENV
+          else
+            echo "Using STAGING config"
+            echo "SECRET_ARN=arn:aws:secretsmanager:${{ secrets.AWS_DEPLOYMENT_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:secret:staging/minisass-4L3Wd0" >> $GITHUB_ENV
+            echo "CLUSTER_NAME=iwmi-staging-cluster-afsouth1" >> $GITHUB_ENV
+          fi
+
+
+          
+      - name: Render task definition
+        working-directory: deployment
+        # replace the placeholder in the task definition with the URL to the new build on ECR
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "S3_MEDIA_BUCKET=minisass" >> $GITHUB_ENV
+            echo "MINIO_AI_BUCKET=minisass" >> $GITHUB_ENV
+            echo "MINIO_BUCKET=minisass" >> $GITHUB_ENV
+          else
+            echo "S3_MEDIA_BUCKET=minisass-staging" >> $GITHUB_ENV
+            echo "MINIO_AI_BUCKET=minisass-staging" >> $GITHUB_ENV
+            echo "MINIO_BUCKET=minisass-staging" >> $GITHUB_ENV
+          fi
+          sed -i "s|<S3_MEDIA_BUCKET>|$S3_MEDIA_BUCKET|g" taskdef.json
+          sed -i "s|<MINIO_AI_BUCKET>|$MINIO_AI_BUCKET|g" taskdef.json
+          sed -i "s|<MINIO_BUCKET>|$MINIO_BUCKET|g" taskdef.json
+          sed -i "s|<ECR_DJANGO_IMAGE_URI>|$FULL_DJANGO_IMAGE_URI|g" taskdef.json
+          sed -i "s|<ECR_TILES_IMAGE_URI>|$FULL_TILES_IMAGE_URI|g" taskdef.json
+          sed -i "s|<ECR_NGINX_IMAGE_URI>|$FULL_NGINX_IMAGE_URI|g" taskdef.json
+          sed -i "s|<AWS_ACCOUNT_ID>|${{ secrets.AWS_ACCOUNT_ID }}|g" taskdef.json
+          sed -i "s|<AWS_REGION>|${{ secrets.AWS_DEPLOYMENT_REGION }}|g" taskdef.json
+          sed -i "s|<SECRET_ARN>|$SECRET_ARN|g" taskdef.json
+          
+      
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: deployment/taskdef.json
+          service: minisass-service
+          cluster:  ${{ env.CLUSTER_NAME }}
+          wait-for-service-stability: true
+          

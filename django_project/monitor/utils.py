@@ -3,7 +3,34 @@ import requests
 import os
 import zipfile
 from django.conf import settings
-from minisass.utils import send_to_minio
+
+
+def safe_save_field_file(field_file, out_dir, dst=None) -> str:
+    """Save a Django FieldFile (which may be backed by S3/MinIO) to a local directory.
+
+    Works with any storage backend by reading through the Django storage API
+    instead of relying on a local filesystem path.
+
+    :param field_file: A Django FieldFile instance (e.g. model.image).
+    :param str out_dir: Directory to save the file into.
+    :param str dst: Filename for the saved file. If None, use the original name.
+    :return: Full path of the saved file.
+    """
+    name = dst or os.path.basename(field_file.name)
+    base, extension = os.path.splitext(name)
+    destination = os.path.join(out_dir, name)
+    i = 1
+    while os.path.exists(destination):
+        destination = os.path.join(out_dir, f'{base}_{i}{extension}')
+        i += 1
+    field_file.open('rb')
+    try:
+        with open(destination, 'wb') as f:
+            for chunk in field_file.chunks():
+                f.write(chunk)
+    finally:
+        field_file.close()
+    return destination
 
 
 def safe_copy(file_path, out_dir, dst=None) -> str:
@@ -44,13 +71,6 @@ def zip_directory(directory_path, zip_path):
                     )
                 )
 
-
-def send_to_ai_bucket(instance):
-    from monitor.models import ObservationPestImage
-
-    instance: ObservationPestImage = instance
-    destination = instance.get_minio_key()
-    send_to_minio(source=instance.image.path, destination=destination, bucket=settings.MINIO_AI_BUCKET)
 
 
 def get_country_from_coordinates_nominatim(latitude, longitude):

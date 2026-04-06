@@ -1,6 +1,5 @@
 import os
 import shutil
-import time
 import requests
 
 from dirtyfields import DirtyFieldsMixin
@@ -14,8 +13,8 @@ from django.dispatch import receiver
 from django.utils.html import mark_safe
 
 from minisass.models import GroupScores
-from minisass.utils import delete_file_field, delete_from_minio, get_path_string
-from monitor.utils import send_to_ai_bucket, get_country_from_coordinates_kartoza_maps
+from minisass.utils import delete_file_field, get_path_string
+from monitor.utils import get_country_from_coordinates_kartoza_maps
 
 
 class Organisations(models.Model):
@@ -290,28 +289,26 @@ class ObservationPestImage(models.Model):
         return destination
 
     def delete_image(self):
-        """delete image."""
-
-        # Delete image if it's not valid/not yet validated by admin.
+        """Delete image from storage."""
         if not self.valid:
             delete_file_field(self.image)
-            delete_from_minio(self.get_minio_key())
 
     def update_image_path(self):
-        initial_path = self.image.path
-        filename = os.path.basename(self.image.path)
-
+        """Move image to correct path in S3 storage."""
+        storage = self.image.storage
+        old_name = self.image.name
+        filename = os.path.basename(old_name)
         new_name = observation_pest_image_path(self, filename)
-        new_path = os.path.join(settings.MINIO_ROOT, new_name)
 
-        # Create dir if necessary and move file
-        if not os.path.exists(os.path.dirname(new_path)):
-            os.makedirs(os.path.dirname(new_path))
+        if old_name == new_name:
+            return
 
-        # if file does not exist, skip it
         try:
-            os.rename(initial_path, new_path)
-        except (FileNotFoundError, FileExistsError):
+            # Copy to new location then delete old
+            with storage.open(old_name, 'rb') as old_file:
+                storage.save(new_name, old_file)
+            storage.delete(old_name)
+        except Exception:
             return
 
         self.image.name = new_name
@@ -364,8 +361,8 @@ def send_email_to_user(sender, instance, **kwargs):
 
 @receiver(post_delete, sender=Sites)
 def site_delete(sender, instance, **kwargs):
-    if os.path.exists(instance.folder):
-        shutil.rmtree(instance.folder)
+    # Site images are deleted via SiteImage post_delete signal
+    pass
 
 
 @receiver(post_delete, sender=SiteImage)
@@ -382,24 +379,9 @@ def check_save_image(sender, instance: ObservationPestImage, **kwargs):
 
     if instance.valid is True and old_instance.valid is False:
         if instance.image.name != old_instance.image.name:
-            instance.send_to_ai_bucket = True
             return
 
         instance.observation.is_validated = True
         instance.observation.save()
 
         instance.update_image_path()
-        instance.send_to_ai_bucket = True
-
-
-@receiver(post_save, sender=ObservationPestImage)
-def post_save_image(sender, instance, created: ObservationPestImage, **kwargs):
-    if created and instance.valid:
-        while True:
-            if os.path.exists(instance.image.path):
-                break
-            time.sleep(1)
-        send_to_ai_bucket(instance)
-
-    elif getattr(instance, 'send_to_ai_bucket', False):
-        send_to_ai_bucket(instance)

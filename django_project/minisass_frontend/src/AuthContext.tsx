@@ -1,210 +1,109 @@
-import React, {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useReducer
-} from 'react';
-import axios from 'axios';
-import { globalVariables } from '../src/utils';
-import {OPEN_PRIVACY_MODAL, usePrivacyConsent} from "./PrivacyConsentContext";
+/**
+ * AuthContext — backward-compatible wrapper around useAuthStore (Zustand).
+ *
+ * Existing components import { useAuth, login, logout, ... } from this file.
+ * This module bridges the old reducer-based API to the new Zustand store
+ * so we can migrate consumers incrementally.
+ *
+ * New code should import from 'stores/auth-store' directly.
+ */
+import React, { ReactNode, useEffect } from "react";
+import { useAuthStore } from "./stores/auth-store";
 
-export type ActionTypes = 'OPEN_LOGIN_MODAL';
-export const OPEN_LOGIN_MODAL: ActionTypes = 'OPEN_LOGIN_MODAL';
+export type ActionTypes = "OPEN_LOGIN_MODAL";
+export const OPEN_LOGIN_MODAL: ActionTypes = "OPEN_LOGIN_MODAL";
 
-// user type
+// ── Legacy types (kept for backward compat) ──
+
 type User = {
   username: string;
   email: string;
-};
-
-// context state and actions
-type AuthState = {
-  user: User | null;
-  isAuthenticated: boolean;
-  refreshToken: null;
-  openLoginModal: boolean;
-  isAdmin: boolean;
-  isPasswordEnforced: boolean;
+  [key: string]: unknown;
 };
 
 type AuthAction =
-  | { type: 'LOGIN'; payload: User }
-  | { type: 'LOGOUT' }
-  | { type: 'REGISTER' }
-  | { type: 'RESET_PASSWORD' }
-  | { type: 'TOKEN_REFRESH'; payload: string }
+  | { type: "LOGIN"; payload: User }
+  | { type: "LOGOUT" }
+  | { type: "REGISTER" }
+  | { type: "RESET_PASSWORD" }
+  | { type: "TOKEN_REFRESH"; payload: string }
   | { type: ActionTypes; payload: boolean };
 
+// ── Legacy dispatch adapter ──
+// Translates the old dispatch({ type, payload }) calls to Zustand actions
+function createDispatchAdapter(): React.Dispatch<AuthAction> {
+  return (action: AuthAction) => {
+    const store = useAuthStore.getState();
+    switch (action.type) {
+      case "LOGIN":
+        store.login(action.payload as User);
+        break;
+      case "LOGOUT":
+        store.logout();
+        break;
+      case OPEN_LOGIN_MODAL:
+        store.setLoginModal(action.payload as boolean);
+        break;
+      case "TOKEN_REFRESH":
+        // Token refresh is handled internally by the store
+        break;
+      case "REGISTER":
+      case "RESET_PASSWORD":
+        // No-ops in the old code too
+        break;
+    }
+  };
+}
 
-const initialState: AuthState = {
-  user: null,
-  isAuthenticated: false,
-  refreshToken: null,
-  openLoginModal: false,
-  isAdmin: false,
-  isPasswordEnforced: false
+const dispatchAdapter = createDispatchAdapter();
+
+// ── useAuth hook (backward-compatible) ──
+export const useAuth = () => {
+  const { user, isAuthenticated, isAdmin, openLoginModal } = useAuthStore();
+
+  return {
+    state: {
+      user,
+      isAuthenticated,
+      refreshToken: null,
+      openLoginModal,
+      isAdmin,
+      isPasswordEnforced: false,
+    },
+    dispatch: dispatchAdapter,
+  };
 };
 
-// Create the context
-const AuthContext = createContext<{ state: AuthState; dispatch: React.Dispatch<AuthAction> } | undefined>(
-  undefined
-);
-
-// Define the reducer function
-const authReducer = (state: AuthState, action: AuthAction): AuthState => {
-  switch (action.type) {
-    case 'LOGIN':
-      return {
-        ...state,
-        user: action.payload,
-        isAuthenticated: true,
-      };
-    case 'LOGOUT':
-      try {
-        return {
-          ...state,
-          user: null,
-          isAuthenticated: false,
-        };
-      } catch (error) {
-        console.error('Logout error:', error);
-      }
-    case 'REGISTER':
-      // Handle the registration action here. TODO
-      return state;
-    case 'RESET_PASSWORD':
-      // Handle the reset password action here. TODO
-      return state;
-    case 'TOKEN_REFRESH':
-      const newAuthState = {
-        ...state,
-        access_token: action.payload,
-      };
-      localStorage.setItem('authState', JSON.stringify(newAuthState));
-      return newAuthState;
-    case OPEN_LOGIN_MODAL:
-      return {
-        ...state,
-        openLoginModal: action.payload,
-      };
-    default:
-      return state;
-  }
+// ── Legacy action creators ──
+export const login = (_dispatch: unknown, user: User) => {
+  useAuthStore.getState().login(user);
 };
 
+export const logout = (_dispatch?: unknown) => {
+  useAuthStore.getState().logout();
+};
 
-const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(authReducer, initialState);
-  const { state: privacyState, dispatch: privacyDispatch } = usePrivacyConsent();
+export const register = (_dispatch?: unknown) => {
+  // No-op placeholder
+};
 
-  // Load the state from local storage (if available)
+export const resetPassword = (_dispatch?: unknown) => {
+  // No-op placeholder
+};
+
+export const tokenRefresh = async (_dispatch?: unknown, _refreshToken?: string) => {
+  await useAuthStore.getState().refreshToken();
+};
+
+// ── AuthProvider (backward-compatible wrapper) ──
+// Initializes auth check and token refresh on mount
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   useEffect(() => {
+    const store = useAuthStore.getState();
+    store.checkAuthStatus();
+    const cleanup = store.startTokenRefreshInterval();
+    return cleanup;
+  }, []);
 
-    const checkAuthStatus = async () => {
-      try {
-        let storedState = localStorage.getItem('authState');
-        storedState = storedState ? JSON.parse(storedState) : {};
-        if (storedState) {
-          const accessToken = storedState.userData?.access_token ? storedState.userData.access_token : "dummy-token";
-
-          const response = await axios.get(`${globalVariables.baseUrl}/authentication/api/check-auth-status/`, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-            },
-          });
-
-          if (response.status == 200) {
-            const userData = response.data;
-            dispatch({ type: 'LOGIN', payload: userData });
-            localStorage.setItem('authState', JSON.stringify({ userData }));
-            axios.defaults.headers.common['Authorization'] = `Bearer ${userData.access_token}`;
-          }
-
-        }
-      } catch (error) {
-        console.error('Check auth status error:', error);
-      }
-    };
-
-    checkAuthStatus();
-
-
-    // Set up an interval to periodically refresh the token (10 mins)
-    const intervalInMilliseconds = 10 * 60 * 1000;
-    const tokenRefreshInterval = setInterval(async () => {
-      const storedState = localStorage.getItem('authState');
-      if (storedState) {
-        const parsedState = JSON.parse(storedState);
-        const refreshToken = parsedState.userData.refresh_token;
-
-        // Check if the user is authenticated before attempting to refresh the token
-        if (parsedState.is_authenticated && refreshToken) {
-          try {
-            await tokenRefresh(dispatch, refreshToken);
-          } catch (error) {
-            console.error('Token refresh error:', error);
-          }
-        }
-      }
-    }, intervalInMilliseconds);
-
-  }, []); // Only run this effect on mount
-
-  return (
-    <AuthContext.Provider
-      value={{ state, dispatch }}>{children}</AuthContext.Provider>
-  );
-};
-
-// hooks and functions for using the context
-const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-// functions to dispatch actions
-const login = (dispatch: React.Dispatch<AuthAction>, user: User) => {
-  dispatch({ type: 'LOGIN', payload: user });
-};
-
-const logout = (dispatch: React.Dispatch<AuthAction>) => {
-  dispatch({ type: 'LOGOUT' });
-  axios.post(`${globalVariables.baseUrl}/authentication/api/logout/`);
-  localStorage.removeItem('authState');
-};
-
-const register = (dispatch: React.Dispatch<AuthAction>) => {
-  dispatch({ type: 'REGISTER' });
-};
-
-const resetPassword = (dispatch: React.Dispatch<AuthAction>) => {
-  dispatch({ type: 'RESET_PASSWORD' });
-};
-
-const tokenRefresh = async (dispatch: React.Dispatch<AuthAction>, refreshToken: string) => {
-  try {
-    const response = await axios.post(`${globalVariables.baseUrl}/token/refresh/`, {
-      refresh: refreshToken,
-    });
-
-    const newAccessToken = response.data.access;
-    axios.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
-    dispatch({ type: 'TOKEN_REFRESH', payload: newAccessToken });
-  } catch (error) {
-    console.error('Token refresh error:', error);
-  }
-};
-
-export {
-  AuthProvider,
-  useAuth,
-  login,
-  logout,
-  register,
-  resetPassword,
-  tokenRefresh
+  return <>{children}</>;
 };

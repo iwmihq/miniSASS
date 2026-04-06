@@ -108,6 +108,7 @@ const ContactFormModal: React.FC<ContactFormModalProps> = ({ isOpen, onClose, on
       isOpen={isOpen}
       onRequestClose={handleCloseModal}
       style={{
+        overlay: { zIndex: 50, backgroundColor: 'rgba(0, 0, 0, 0.5)' },
         content: {
           top: '50%',
           left: '50%',
@@ -115,8 +116,10 @@ const ContactFormModal: React.FC<ContactFormModalProps> = ({ isOpen, onClose, on
           bottom: 'auto',
           marginRight: '-50%',
           transform: 'translate(-50%, -50%)',
-          width: '605px',
-          // height: '587px',
+          width: 'calc(100% - 32px)',
+          maxWidth: '605px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           borderRadius: '0px 25px 25px 25px',
           border: 'none',
           background: 'white',
@@ -154,7 +157,7 @@ const ContactFormModal: React.FC<ContactFormModalProps> = ({ isOpen, onClose, on
               color="blue_gray_500"
               size="xs"
               variant="fill"
-              style={{ marginLeft: "68%" }}
+              style={{ marginLeft: "auto" }}
               onClick={handleCloseModal}
             >
               Ok
@@ -167,13 +170,13 @@ const ContactFormModal: React.FC<ContactFormModalProps> = ({ isOpen, onClose, on
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-start',
-            padding: '32px',
+            padding: '24px',
             gap: '18px',
             position: 'relative',
-            width: '605px',
-            height: '587px',
+            width: '100%',
             background: 'white',
             borderRadius: '0px 25px 25px 25px',
+            boxSizing: 'border-box',
           }}
         >
           <div
@@ -183,8 +186,7 @@ const ContactFormModal: React.FC<ContactFormModalProps> = ({ isOpen, onClose, on
               alignItems: 'flex-start',
               padding: '0px',
               gap: '10px',
-              width: '541px',
-              height: '33px',
+              width: '100%',
             }}
           >
             <h3
@@ -229,7 +231,7 @@ const ContactFormModal: React.FC<ContactFormModalProps> = ({ isOpen, onClose, on
               flexDirection: 'column',
               alignItems: 'flex-start',
               gap: '6px',
-              width: '541px',
+              width: '100%',
             }}
           >
         {showHeading && (
@@ -243,7 +245,7 @@ const ContactFormModal: React.FC<ContactFormModalProps> = ({ isOpen, onClose, on
           value={formData.name}
           onChange={handleInputChange}
           style={{
-            width: '541px',
+            width: '100%',
             height: '40px',
             borderRadius: '4px',
           }}
@@ -258,7 +260,7 @@ const ContactFormModal: React.FC<ContactFormModalProps> = ({ isOpen, onClose, on
           value={formData.email}
           onChange={handleInputChange}
           style={{
-            width: '541px',
+            width: '100%',
             height: '40px',
             borderRadius: '4px',
           }}
@@ -273,7 +275,7 @@ const ContactFormModal: React.FC<ContactFormModalProps> = ({ isOpen, onClose, on
           value={formData.phone}
           onChange={handleInputChange}
           style={{
-            width: '541px',
+            width: '100%',
             height: '40px',
             borderRadius: '4px',
           }}
@@ -288,7 +290,7 @@ const ContactFormModal: React.FC<ContactFormModalProps> = ({ isOpen, onClose, on
           onChange={handleInputChange}
           style={{
             minHeight: '123px',
-            width: '541px',
+            width: '100%',
             height: '123px',
             borderRadius: '4px',
           }}
@@ -302,7 +304,7 @@ const ContactFormModal: React.FC<ContactFormModalProps> = ({ isOpen, onClose, on
                 flexDirection: 'column',
                 alignItems: 'flex-end',
                 gap: '10px',
-                width: '541px',
+                width: '100%',
                 height: '37px'
               }}
             >

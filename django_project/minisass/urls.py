@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import path, re_path, include
 from django.conf import settings
 from django.views.static import serve
@@ -56,11 +57,19 @@ urlpatterns = [
     # Indlude monitor URLs
     path('monitor/', include('monitor.urls')),
 
-    # map frontend urls to backend
+    # map frontend urls to backend (with and without trailing slash for SPA compatibility)
     path("map/", ReactBaseView.as_view(template_name="react_base.html"), name="map"),
+    path("map", ReactBaseView.as_view(template_name="react_base.html")),
     path("password-reset/", ReactBaseView.as_view(template_name="react_base.html"), name="password_reset"),
+    path("password-reset", ReactBaseView.as_view(template_name="react_base.html")),
     path("howto/", ReactBaseView.as_view(template_name="react_base.html"), name="how_to"),
+    path("howto", ReactBaseView.as_view(template_name="react_base.html")),
     path("recent-activity/", ReactBaseView.as_view(template_name="react_base.html"), name="recent_activity"),
+    path("recent-activity", ReactBaseView.as_view(template_name="react_base.html")),
+    path("mobile-app/", ReactBaseView.as_view(template_name="react_base.html"), name="mobile_app"),
+    path("mobile-app", ReactBaseView.as_view(template_name="react_base.html")),
+    path("privacy-policy/", ReactBaseView.as_view(template_name="react_base.html"), name="privacy_policy_page"),
+    path("privacy-policy", ReactBaseView.as_view(template_name="react_base.html")),
 
     # privacy policy
     path(
@@ -80,6 +89,7 @@ urlpatterns = [
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path("health/", lambda request: HttpResponse("OK"), name="health"),
 ]
 
 if settings.DEBUG:
