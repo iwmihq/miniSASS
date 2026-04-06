@@ -38,7 +38,7 @@ jobs:
       - name: Set Environment Tag
         run: |
           if [ "${{ github.ref_name }}" = "main" ]; then
-            ENV=prod" >> $GITHUB_ENV
+            echo "ENV=prod" >> $GITHUB_ENV
           else
             echo "ENV=staging" >> $GITHUB_ENV
           fi
