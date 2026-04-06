@@ -90,7 +90,7 @@ jobs:
         run: |
           if [ "${{ github.ref_name }}" = "main" ]; then
             echo "Using PRODUCTION config"
-            echo "SECRET_ARN=arn:aws:secretsmanager:${{ secrets.AWS_DEPLOYMENT_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:secret:prod/minisass-pTZzPUs" >> $GITHUB_ENV
+            echo "SECRET_ARN=arn:aws:secretsmanager:${{ secrets.AWS_DEPLOYMENT_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:secret:prod/minisass-pTZzPU" >> $GITHUB_ENV
             echo "CLUSTER_NAME=iwmi-prod-cluster-afsouth1" >> $GITHUB_ENV
           else
             echo "Using STAGING config"
