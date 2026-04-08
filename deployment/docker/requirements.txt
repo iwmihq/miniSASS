@@ -7,7 +7,7 @@ cryptography==41.0.6
 cssselect2==0.7.0
 distlib==0.3.7
 distro==1.8.0
-Django==4.2.7
+Django==4.2.30
 django-appconf==1.0.5
 django-classy-tags==4.1.0
 django-dirtyfields==1.9.2
