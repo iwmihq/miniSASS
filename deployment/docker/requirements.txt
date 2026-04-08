@@ -44,7 +44,7 @@ pyparsing==3.1.1
 pyserial==3.5
 recaptcha-client==1.0.6
 reportlab==4.0.6
-requests==2.31.0
+requests==2.33.0
 simple-translation==0.8.6
 simplejson==3.19.2
 six==1.16.0
