@@ -39,7 +39,7 @@ pinax-templates==3.0.0
 platformdirs==3.11.0
 psycopg2==2.9.9
 pycparser==2.21
-pyOpenSSL==23.3.0
+pyOpenSSL==26.0.0
 pyparsing==3.1.1
 pyserial==3.5
 recaptcha-client==1.0.6
