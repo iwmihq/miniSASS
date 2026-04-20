@@ -53,6 +53,7 @@ nav:
                         - Profile: user/guide/profile.md
                         - Forgot Password: user/guide/forgot-password.md
                         - Map: user/guide/map.md
+                        - Legacy User Accommodation: user/guide/legacy-user-accommodation.md
                   - Manual:
                         - user/manual/index.md
                         - Landing Page: user/manual/landing-page.md

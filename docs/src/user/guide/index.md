@@ -25,3 +25,5 @@ Welcome to the miniSASS user guide. In this section of the documentation, we aim
 * **[Forgot Password:](./forgot-password.md)** This guide will walk you through the process of the forgot password functionality. 
 
 * **[Map:](./map.md)** This guide will walk you through how you can make the most of the map.
+
+* **[Legacy User Accommodation:](./map.md)** This guide will walk you through what is account merging and why we are doing this.
