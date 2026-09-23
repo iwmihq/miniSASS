@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
+import type { AxiosError } from "axios";
 import apiClient, { baseUrl } from "../lib/api-client";
 
 type User = {
@@ -86,11 +87,37 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   checkAuthStatus: async () => {
     try {
+      // Ask the server even when localStorage is empty.
+      //
+      // This is what makes YOMA single sign-on work. The callback at
+      // /authentication/api/yoma/callback/ establishes a Django *session* and
+      // redirects home; it never hands the SPA a token. A YOMA user therefore
+      // arrives here with empty localStorage, and returning early meant the SPA
+      // never discovered the session: you came back from yoma.world and were
+      // still logged out, with no error shown anywhere.
+      //
+      // check-auth-status accepts a JWT or the session cookie
+      // (CustomJWTAuthentication, then CustomSessionAuthentication) and mints a
+      // fresh access/refresh pair on success, so this call is precisely what
+      // converts a YOMA session into the tokens the rest of the app uses.
+      //
+      // The placeholder token below is deliberate: it lets JWT authentication
+      // fail cleanly so the session authenticator gets its turn. The pre-2026
+      // AuthContext did the same thing by accident, by coercing missing state to
+      // {} (truthy) and falling back to "dummy-token". Tidying that into a null
+      // check is what broke SSO.
       const storedState = localStorage.getItem("authState");
-      if (!storedState) return;
+      let accessToken = "dummy-token";
 
-      const parsed = JSON.parse(storedState);
-      const accessToken = parsed.userData?.access_token || "dummy-token";
+      if (storedState) {
+        try {
+          accessToken =
+            JSON.parse(storedState)?.userData?.access_token || "dummy-token";
+        } catch {
+          // Corrupt entry; fall through with the placeholder rather than
+          // throwing, so a bad localStorage value cannot lock someone out.
+        }
+      }
 
       const response = await apiClient.get(
         "/authentication/api/check-auth-status/",
@@ -99,11 +126,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       );
 
-      if (response.status === 200) {
+      if (response.status === 200 && response.data?.is_authenticated) {
         get().login(response.data);
       }
     } catch (error) {
-      console.error("Check auth status error:", error);
+      // 401 is the ordinary answer for a visitor who simply is not logged in,
+      // which is now every anonymous page load. Only report anything else.
+      const status = (error as AxiosError)?.response?.status;
+      if (status !== 401) {
+        console.error("Check auth status error:", error);
+      }
     }
   },
 
