@@ -516,3 +516,73 @@ class YomaAuthIntegrationTest(YomaAuthTestCase):
 
         self.assertEqual(status_response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertFalse(status_response.data['has_token'])
+
+
+class YomaSessionHandoffTest(APITestCase):
+    """
+    The handoff from a YOMA session to the SPA.
+
+    This is the seam that broke YOMA single sign-on between August 2025 and
+    March 2026, and nothing covered it. The callback logs the user in with
+    django.contrib.auth.login(), which sets a *session cookie* and nothing else,
+    then redirects to the home page. The SPA holds its auth state as a JWT, so
+    the only thing that turns that session into a usable login is a call to
+    check-auth-status, which accepts the session cookie and mints a fresh token
+    pair.
+
+    Two things therefore have to stay true, and each of these tests pins one:
+
+      1. check-auth-status must authenticate on the session cookie alone, with
+         no usable JWT presented. Removing CustomSessionAuthentication from that
+         view would break SSO silently, with no error anywhere.
+      2. It must return access and refresh tokens, because a YOMA user has no
+         other way to obtain them and every later API call needs one.
+    """
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username='yoma-user@example.com',
+            email='yoma-user@example.com',
+            password='irrelevant-for-sso',
+        )
+        self.url = reverse('check-auth-status')
+
+    def _login_like_the_yoma_callback(self):
+        """Session only, exactly what YomaAuthCallbackView leaves behind."""
+        self.client.force_login(
+            self.user, backend='django.contrib.auth.backends.ModelBackend'
+        )
+
+    def test_session_alone_authenticates_with_no_usable_jwt(self):
+        self._login_like_the_yoma_callback()
+
+        # "dummy-token" is what the SPA sends when it holds no token of its own,
+        # which is exactly the state a first-time YOMA user is in. It has to fail
+        # JWT authentication so the session authenticator gets its turn.
+        response = self.client.get(self.url, HTTP_AUTHORIZATION='Bearer dummy-token')
+
+        self.assertEqual(
+            response.status_code, 200,
+            'a YOMA session must authenticate check-auth-status on its own',
+        )
+        self.assertTrue(response.data['is_authenticated'])
+        self.assertEqual(response.data['username'], 'yoma-user@example.com')
+
+    def test_session_login_returns_tokens_the_spa_can_use(self):
+        self._login_like_the_yoma_callback()
+
+        response = self.client.get(self.url, HTTP_AUTHORIZATION='Bearer dummy-token')
+
+        self.assertEqual(response.status_code, 200)
+        for key in ('access_token', 'refresh_token'):
+            self.assertTrue(
+                response.data.get(key),
+                f'{key} is missing, so a YOMA user could never call the API',
+            )
+
+    def test_without_a_session_the_endpoint_still_refuses(self):
+        """The fix must not turn this into an open endpoint."""
+        response = self.client.get(self.url, HTTP_AUTHORIZATION='Bearer dummy-token')
+
+        self.assertEqual(response.status_code, 401)
