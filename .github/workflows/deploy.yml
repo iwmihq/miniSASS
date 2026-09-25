@@ -154,7 +154,7 @@ jobs:
           echo "Static files synced to s3://${S3_MEDIA_BUCKET}/static/"
 
       - name: Deploy to ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: deployment/taskdef.json
           service: minisass-service
