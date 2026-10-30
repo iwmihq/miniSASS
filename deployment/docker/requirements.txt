@@ -23,7 +23,7 @@ django-staticfiles==1.2.1
 django-tagging==0.5.0
 django-treebeard==4.7
 easy-thumbnails==2.8.5
-filelock==3.20.3
+filelock==4.2.1
 html5lib==1.1
 httplib2==0.32.0
 idna==3.15
